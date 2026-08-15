@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="nl" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Trainer">
+<meta name="theme-color" content="#fcfcfb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)">
+<title>Personal Trainer</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232a78d6'/%3E%3Cpath d='M12 44 L24 28 L34 36 L52 16' stroke='white' stroke-width='6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%232a78d6'/%3E%3Cpath d='M12 44 L24 28 L34 36 L52 16' stroke='white' stroke-width='6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root{
+  color-scheme: light;
+  --surface-1:#fcfcfb; --plane:#f4f4f1; --card:#ffffff;
+  --text-primary:#0b0b0b; --text-secondary:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.10);
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4;
+  --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+  --good-ink:#006300; --warn-ink:#8a5a00; --crit-ink:#a52424;
+  --accent:#2a78d6;
+}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])){
+    color-scheme: dark;
+    --surface-1:#1a1a19; --plane:#0d0d0d; --card:#1a1a19;
+    --text-primary:#ffffff; --text-secondary:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10);
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
+    --good-ink:#0ca30c; --warn-ink:#fab219; --crit-ink:#e66767;
+    --accent:#3987e5;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --surface-1:#1a1a19; --plane:#0d0d0d; --card:#1a1a19;
+  --text-primary:#ffffff; --text-secondary:#c3c2b7; --muted:#898781;
+  --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10);
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
+  --good-ink:#0ca30c; --warn-ink:#fab219; --crit-ink:#e66767;
+  --accent:#3987e5;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--plane); color:var(--text-primary);
+  font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;
+  overscroll-behavior-y:none;
+}
+#app{padding:0 16px calc(84px + env(safe-area-inset-bottom));max-width:640px;margin:0 auto}
+header.top{padding:calc(14px + env(safe-area-inset-top)) 0 10px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+header.top h1{font-size:26px;line-height:1.1;margin:0;letter-spacing:-.02em}
+header.top .sub{color:var(--text-secondary);font-size:13px;margin-top:2px}
+.iconbtn{border:1px solid var(--border);background:var(--card);color:var(--text-secondary);
+  width:38px;height:38px;border-radius:12px;font-size:16px;display:grid;place-items:center;cursor:pointer;flex:none}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin:0 0 12px}
+.card h2{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-weight:600}
+.card h3{font-size:17px;margin:0 0 4px;letter-spacing:-.01em}
+.row{display:flex;gap:10px}
+.muted{color:var(--muted)} .sec{color:var(--text-secondary)}
+.small{font-size:13px} .tiny{font-size:11.5px}
+.num{font-variant-numeric:tabular-nums}
+
+/* hero */
+.hero{display:flex;align-items:baseline;gap:8px}
+.hero .v{font-size:40px;font-weight:600;letter-spacing:-.03em;line-height:1}
+.hero .u{font-size:14px;color:var(--text-secondary)}
+
+/* status pill */
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:600;border:1px solid var(--border)}
+.pill .dot{width:8px;height:8px;border-radius:50%;flex:none}
+.pill.good{color:var(--good-ink)} .pill.good .dot{background:var(--good)}
+.pill.warn{color:var(--warn-ink)} .pill.warn .dot{background:var(--warning)}
+.pill.crit{color:var(--crit-ink)} .pill.crit .dot{background:var(--critical)}
+.pill.neutral{color:var(--text-secondary)} .pill.neutral .dot{background:var(--axis)}
+
+/* tiles */
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.tile{background:var(--surface-1);border:1px solid var(--border);border-radius:13px;padding:11px 12px}
+.tile .k{font-size:11.5px;color:var(--muted);letter-spacing:.03em}
+.tile .v{font-size:23px;font-weight:600;letter-spacing:-.02em;margin-top:2px}
+.tile .n{font-size:11.5px;color:var(--text-secondary);margin-top:1px}
+
+/* session */
+.session{border-left:3px solid var(--accent);padding-left:12px}
+.session.rest{border-color:var(--axis)}
+.badge{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:2px 6px}
+
+/* zone bar */
+.zonebar{position:relative;height:26px;border-radius:8px;overflow:hidden;background:var(--surface-1);border:1px solid var(--border);margin-top:8px}
+.zonebar .seg{position:absolute;top:0;bottom:0}
+.zonebar .target{position:absolute;top:0;bottom:0;border-left:2px solid var(--text-primary);border-right:2px solid var(--text-primary);background:rgba(127,127,127,.14)}
+.zonebar .mark{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--text-primary)}
+.zonescale{display:flex;justify-content:space-between;margin-top:3px}
+
+/* list */
+.item{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--grid)}
+.item:first-child{border-top:0}
+.item .st{width:20px;flex:none;text-align:center;font-size:14px;line-height:1.4}
+.item .body{flex:1;min-width:0}
+.item .t{font-size:14.5px;font-weight:500}
+.item .d{font-size:12.5px;color:var(--text-secondary);margin-top:1px}
+.item .r{font-size:12.5px;color:var(--muted);text-align:right;flex:none;white-space:nowrap}
+
+/* weeks */
+.wk{border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden;background:var(--card)}
+.wk>summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;align-items:center;gap:10px}
+.wk>summary::-webkit-details-marker{display:none}
+.wk>summary .wt{flex:1;font-weight:600;font-size:15px}
+.wk .inner{padding:0 14px 12px}
+.wk.now{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+
+/* tabs */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;
+  background:color-mix(in srgb,var(--card) 88%,transparent);backdrop-filter:saturate(180%) blur(20px);
+  border-top:1px solid var(--border);display:flex;padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+nav.tabs button{flex:1;background:none;border:0;color:var(--muted);font:inherit;font-size:10.5px;font-weight:600;
+  padding:6px 2px;display:grid;gap:2px;justify-items:center;cursor:pointer;letter-spacing:.02em}
+nav.tabs button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+nav.tabs button[aria-current="true"]{color:var(--accent)}
+
+/* chart */
+svg.chart{display:block;width:100%;height:auto;overflow:visible}
+.tt{position:fixed;z-index:60;pointer-events:none;background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:7px 9px;font-size:12.5px;box-shadow:0 6px 24px rgba(0,0,0,.16);opacity:0;transition:opacity .12s}
+.tt.on{opacity:1}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+.legend span{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--text-secondary)}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.tblbtn{background:none;border:0;color:var(--muted);font:inherit;font-size:11.5px;cursor:pointer;padding:4px 0;text-decoration:underline}
+table.dt{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums;margin-top:6px}
+table.dt th,table.dt td{text-align:right;padding:4px 6px;border-bottom:1px solid var(--grid)}
+table.dt th:first-child,table.dt td:first-child{text-align:left}
+table.dt th{color:var(--muted);font-weight:600;font-size:11.5px}
+
+/* sheet */
+.sheet{position:fixed;inset:0;z-index:50;display:none}
+.sheet.on{display:block}
+.sheet .bg{position:absolute;inset:0;background:rgba(0,0,0,.42)}
+.sheet .panel{position:absolute;left:0;right:0;bottom:0;background:var(--plane);border-radius:20px 20px 0 0;
+  padding:18px 16px calc(20px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto;max-width:640px;margin:0 auto}
+.sheet h2{font-size:19px;margin:0 0 12px;text-transform:none;letter-spacing:-.01em;color:var(--text-primary)}
+label.f{display:block;margin:10px 0 0;font-size:12.5px;color:var(--text-secondary)}
+input.f,select.f{width:100%;margin-top:4px;padding:10px 12px;border-radius:11px;border:1px solid var(--border);
+  background:var(--card);color:var(--text-primary);font:inherit;font-size:16px}
+button.btn{width:100%;margin-top:14px;padding:12px;border-radius:12px;border:0;background:var(--accent);color:#fff;
+  font:inherit;font-weight:600;font-size:15px;cursor:pointer}
+button.btn.ghost{background:transparent;color:var(--text-secondary);border:1px solid var(--border)}
+.note{font-size:12.5px;color:var(--text-secondary);background:var(--surface-1);border:1px solid var(--border);
+  border-radius:11px;padding:10px 12px;margin-top:12px}
+.seg{display:flex;gap:6px;background:var(--surface-1);border:1px solid var(--border);border-radius:11px;padding:3px}
+.seg button{flex:1;border:0;background:none;color:var(--text-secondary);font:inherit;font-size:13px;padding:7px;border-radius:8px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--card);color:var(--text-primary);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.10)}
+hr.sep{border:0;border-top:1px solid var(--grid);margin:14px 0}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <div>
+      <h1 id="ttl">Vandaag</h1>
+      <div class="sub" id="sub"></div>
+    </div>
+    <button class="iconbtn" id="settingsBtn" aria-label="Instellingen">⚙</button>
+  </header>
+  <main id="view"></main>
+</div>
+
+<nav class="tabs" id="tabs"></nav>
+<div class="tt" id="tt"></div>
+
+<div class="sheet" id="sheet">
+  <div class="bg" data-close></div>
+  <div class="panel" id="panel"></div>
+</div>
+
+<script id="seed" type="application/json">{"generated":"2026-08-15","athlete":{"name":"Matthijs","weight":66},"profile":{"maxhr":190,"lthr":180,"rhr":52,"vo2max":58,"vo2max_start":51,"ae":1.32},"zones":[{"z":"Z1","lo":100,"hi":145,"label":"rustig / herstel"},{"z":"Z2","lo":146,"hi":161,"label":"aeroob, lange duurloop"},{"z":"Z3","lo":162,"hi":168,"label":"tempo"},{"z":"Z4","lo":169,"hi":179,"label":"drempel"},{"z":"Z5","lo":180,"hi":190,"label":"boven drempel"}],"race":{"name":"Dam tot Dam","date":"2026-09-20","dist":16.09,"goal":"1:11–1:12","goal_pace":"4:25–4:28/km","prev":"1:14:11 (2024)","riegel":"1:09:25"},"plan":[{"week":1,"date":"2026-08-12","day":"wo","title":"Rustige duurloop + strides","detail":"10 km rustig, afsluiten met 6× 20 s strides","band":"140-150","km":10},{"week":1,"date":"2026-08-15","day":"za","title":"Drempelblokken 3× 12 min","detail":"3× 12 min op 168–172 bpm, 3 min dribbel tussendoor","band":"168-172","km":12},{"week":1,"date":"2026-08-16","day":"zo","title":"Lange duurloop 16 km","detail":"16 km volledig rustig","band":"140-150","km":16},{"week":2,"date":"2026-08-19","day":"wo","title":"Rustige duurloop + strides","detail":"10 km rustig + strides","band":"140-150","km":10},{"week":2,"date":"2026-08-22","day":"za","title":"8 km aaneengesloten","detail":"8 km onafgebroken op 168–172 bpm","band":"168-172","km":12},{"week":2,"date":"2026-08-23","day":"zo","title":"Lange duurloop 19 km","detail":"19 km, laatste 3 km op 4:30/km","band":"140-150","km":19},{"week":3,"date":"2026-08-26","day":"wo","title":"Rustige duurloop + strides","detail":"10 km rustig + strides","band":"140-150","km":10},{"week":3,"date":"2026-08-29","day":"za","title":"Drempelblokken 2× 20 min","detail":"2× 20 min op 168–172 bpm","band":"168-172","km":13},{"week":3,"date":"2026-08-30","day":"zo","title":"Langste duurloop 22 km","detail":"22 km rustig — de langste van de opbouw","band":"140-150","km":22},{"week":4,"date":"2026-09-02","day":"wo","title":"Rustige duurloop + strides","detail":"10 km rustig + strides","band":"140-150","km":10},{"week":4,"date":"2026-09-05","day":"za","title":"Generale 12 km op wedstrijdtempo","detail":"12 km op 4:25–4:28/km, hartslag maximaal 170","band":"165-170","km":14},{"week":4,"date":"2026-09-06","day":"zo","title":"Lange duurloop 18 km","detail":"18 km, laatste 6 km op 4:30/km","band":"140-150","km":18},{"week":5,"date":"2026-09-09","day":"wo","title":"Rustige duurloop + strides","detail":"8 km rustig + strides","band":"140-150","km":8},{"week":5,"date":"2026-09-12","day":"za","title":"Drempelblokken 3× 10 min","detail":"3× 10 min op 170–173 bpm","band":"170-173","km":11},{"week":5,"date":"2026-09-13","day":"zo","title":"Lange duurloop 15 km","detail":"15 km rustig","band":"140-150","km":15},{"week":6,"date":"2026-09-16","day":"wo","title":"Kort en rustig","detail":"6 km rustig + 4 strides","band":"140-150","km":6},{"week":6,"date":"2026-09-19","day":"za","title":"Scherpstellen","detail":"20 min inlopen + 3× 1 min op wedstrijdtempo","band":"165-170","km":7},{"week":6,"date":"2026-09-20","day":"zo","title":"Dam tot Dam · 16,09 km","detail":"Doel 1:11–1:12. km 1–5 max 168 · km 6–11 op 170–173 · km 12–16 vrij","band":"165-180","km":16.09}],"weeks":[{"n":1,"from":"2026-08-10","to":"2026-08-16","km":34},{"n":2,"from":"2026-08-17","to":"2026-08-23","km":38},{"n":3,"from":"2026-08-24","to":"2026-08-30","km":42},{"n":4,"from":"2026-08-31","to":"2026-09-06","km":40},{"n":5,"from":"2026-09-07","to":"2026-09-13","km":32},{"n":6,"from":"2026-09-14","to":"2026-09-20","km":20}],"yearZones":{"Z1":39,"Z2":48,"Z3":5,"Z4":6,"Z5":1},"yearKm":{"2026-01":80,"2026-02":126,"2026-03":131,"2026-04":155,"2026-05":182,"2026-06":139,"2026-07":125,"2026-08":48},"races2026":[{"name":"10 km Amsterdam","date":"2026-03-15","time":"42:29","pace":"4:14/km","hr":179,"h1":"4:11 @ 175","h2":"4:18 @ 181","fade":"+6 s/km"},{"name":"VU Polderloop 10 km","date":"2026-07-02","time":"41:34","pace":"4:11/km","hr":180,"h1":"4:05 @ 179","h2":"4:19 @ 181","fade":"+14 s/km"}],"dtd2024":{"pace":[257,273,252,256,261,270,266,270,268,273,278,282,292,295,298,295],"hr":[159,175,177,179,179,179,178,178,178,178,178,178,177,173,175,174]},"hrPace":[{"band":"160–164","pace":"4:48"},{"band":"165–169","pace":"4:25"},{"band":"170–174","pace":"4:08"},{"band":"175–179","pace":"4:21"}],"activities":[{"id":"16913666835","name":"Hallo 2026 en nieuwe schoenen!","sport":"Run","date":"2026-01-02","time":"15:27","dist_m":11297.6,"moving_s":3725,"elev_m":9.3,"avg_ms":3.033,"max_ms":4.663,"effort":61,"kcal":740,"cadence":90.6239},{"id":"16934032768","name":"Easy loopje door de sneeuw","sport":"Run","date":"2026-01-04","time":"13:00","dist_m":8168.7,"moving_s":2567,"elev_m":16.4,"avg_ms":3.182,"max_ms":4.517,"effort":51,"kcal":538,"cadence":90.133},{"id":"16942007040","name":"Let it show let it snow let it snow","sport":"Ride","date":"2026-01-05","time":"08:02","dist_m":4994.8,"moving_s":1067,"elev_m":8.3,"avg_ms":4.681,"max_ms":8.32,"effort":4,"kcal":144,"cadence":null},{"id":"16946836335","name":"Afternoon Ride","sport":"Ride","date":"2026-01-05","time":"17:25","dist_m":5551.2,"moving_s":1292,"elev_m":2.7,"avg_ms":4.297,"max_ms":6.65,"effort":3,"kcal":176,"cadence":null},{"id":"16953049038","name":"Morning Ride","sport":"Ride","date":"2026-01-06","time":"08:03","dist_m":4952.1,"moving_s":1133,"elev_m":8.2,"avg_ms":4.371,"max_ms":7.586,"effort":3,"kcal":148,"cadence":null},{"id":"16958502916","name":"Afternoon Ride","sport":"Ride","date":"2026-01-06","time":"17:24","dist_m":5119.7,"moving_s":1736,"elev_m":2.5,"avg_ms":2.949,"max_ms":8.383,"effort":6,"kcal":229,"cadence":null},{"id":"16966141156","name":"Morning Ride","sport":"Ride","date":"2026-01-07","time":"08:04","dist_m":4990.8,"moving_s":1088,"elev_m":8.3,"avg_ms":4.587,"max_ms":7.4,"effort":3,"kcal":128,"cadence":null},{"id":"16969676165","name":"Afternoon Ride","sport":"Ride","date":"2026-01-07","time":"17:25","dist_m":4999.8,"moving_s":1047,"elev_m":2.5,"avg_ms":4.775,"max_ms":9.42,"effort":3,"kcal":121,"cadence":null},{"id":"16976154156","name":"Morning Ride","sport":"Ride","date":"2026-01-08","time":"08:05","dist_m":4954.6,"moving_s":1079,"elev_m":11.4,"avg_ms":4.592,"max_ms":8.06,"effort":5,"kcal":142,"cadence":null},{"id":"16981087037","name":"Afternoon Ride","sport":"Ride","date":"2026-01-08","time":"17:22","dist_m":5915.6,"moving_s":1186,"elev_m":7.4,"avg_ms":4.988,"max_ms":8.267,"effort":6,"kcal":303,"cadence":null},{"id":"16982652726","name":"Even een kort rondje","sport":"Run","date":"2026-01-08","time":"20:13","dist_m":5541.2,"moving_s":1768,"elev_m":14.5,"avg_ms":3.134,"max_ms":5.28,"effort":21,"kcal":362,"cadence":89.6126},{"id":"17001589466","name":"Heerlijk koud!","sport":"Run","date":"2026-01-10","time":"15:01","dist_m":8632.9,"moving_s":2733,"elev_m":9.6,"avg_ms":3.159,"max_ms":6.38,"effort":25,"kcal":557,"cadence":90.5358},{"id":"17012743466","name":"Siberisch Z2","sport":"Run","date":"2026-01-11","time":"14:11","dist_m":9520.9,"moving_s":3031,"elev_m":12.1,"avg_ms":3.141,"max_ms":5.2,"effort":21,"kcal":626,"cadence":90.3812,"desc":"Warm up \nZ2"},{"id":"17019716764","name":"Morning Ride","sport":"Ride","date":"2026-01-12","time":"07:51","dist_m":5078.1,"moving_s":1032,"elev_m":8.5,"avg_ms":4.921,"max_ms":8.171,"effort":4,"kcal":185,"cadence":null},{"id":"17024303960","name":"Afternoon Ride","sport":"Ride","date":"2026-01-12","time":"17:24","dist_m":3809.8,"moving_s":722,"elev_m":2.6,"avg_ms":5.277,"max_ms":9.16,"effort":1,"kcal":67,"cadence":null},{"id":"17031367955","name":"Morning Ride","sport":"Ride","date":"2026-01-13","time":"08:14","dist_m":5322.7,"moving_s":1272,"elev_m":17.1,"avg_ms":4.185,"max_ms":7.5,"effort":3,"kcal":135,"cadence":null},{"id":"17036352697","name":"Afternoon Ride","sport":"Ride","date":"2026-01-13","time":"17:24","dist_m":4887.8,"moving_s":1014,"elev_m":2.6,"avg_ms":4.82,"max_ms":8.92,"effort":3,"kcal":140,"cadence":null},{"id":"17043568794","name":"Morning Ride","sport":"Ride","date":"2026-01-14","time":"08:05","dist_m":4925.2,"moving_s":963,"elev_m":8.2,"avg_ms":5.114,"max_ms":7.667,"effort":2,"kcal":124,"cadence":null},{"id":"17048307982","name":"Afternoon Ride","sport":"Ride","date":"2026-01-14","time":"16:33","dist_m":6262.2,"moving_s":1063,"elev_m":2.6,"avg_ms":5.891,"max_ms":8.875,"effort":4,"kcal":222,"cadence":null},{"id":"17100513235","name":"Morning Ride","sport":"Ride","date":"2026-01-19","time":"07:54","dist_m":4931.8,"moving_s":945,"elev_m":8.1,"avg_ms":5.219,"max_ms":9.65,"effort":2,"kcal":116,"cadence":null},{"id":"17105393722","name":"Afternoon Ride","sport":"Ride","date":"2026-01-19","time":"17:24","dist_m":5134.3,"moving_s":1138,"elev_m":6.5,"avg_ms":4.512,"max_ms":8.733,"effort":3,"kcal":181,"cadence":null},{"id":"17117360957","name":"Morning Ride","sport":"Ride","date":"2026-01-20","time":"07:53","dist_m":4946.4,"moving_s":955,"elev_m":8.3,"avg_ms":5.179,"max_ms":9.067,"effort":3,"kcal":116,"cadence":null},{"id":"17117360969","name":"Afternoon Ride","sport":"Ride","date":"2026-01-20","time":"17:25","dist_m":5202.8,"moving_s":1080,"elev_m":4.7,"avg_ms":4.817,"max_ms":8.842,"effort":4,"kcal":175,"cadence":null},{"id":"17131210479","name":"Easy rondje","sport":"Run","date":"2026-01-21","time":"19:58","dist_m":6822,"moving_s":2171,"elev_m":13.4,"avg_ms":3.142,"max_ms":4.014,"effort":46,"kcal":468,"cadence":90.1105,"desc":"Hf meter totaal in de war dus maar een beetje op gevoel."},{"id":"17135730180","name":"Morning Ride","sport":"Ride","date":"2026-01-22","time":"08:08","dist_m":4946.5,"moving_s":984,"elev_m":8.4,"avg_ms":5.027,"max_ms":8.357,"effort":2,"kcal":118,"cadence":null},{"id":"17140207250","name":"Afternoon Ride","sport":"Ride","date":"2026-01-22","time":"16:40","dist_m":4965.2,"moving_s":1061,"elev_m":2.6,"avg_ms":4.68,"max_ms":8.4,"effort":3,"kcal":143,"cadence":null},{"id":"17147095299","name":"Pre work duurloopje","sport":"Run","date":"2026-01-23","time":"08:18","dist_m":8765.3,"moving_s":2807,"elev_m":10.5,"avg_ms":3.123,"max_ms":4.563,"effort":48,"kcal":599,"cadence":90.5022},{"id":"17173711863","name":"Easy loopje in de kou","sport":"Run","date":"2026-01-25","time":"15:06","dist_m":11277.9,"moving_s":3610,"elev_m":9.4,"avg_ms":3.124,"max_ms":4.789,"effort":39,"kcal":747,"cadence":88.4018},{"id":"17179609408","name":"Morning Ride","sport":"Ride","date":"2026-01-26","time":"08:06","dist_m":4910.1,"moving_s":922,"elev_m":8.3,"avg_ms":5.325,"max_ms":8.867,"effort":2,"kcal":110,"cadence":null},{"id":"17184161846","name":"Afternoon Ride","sport":"Ride","date":"2026-01-26","time":"17:25","dist_m":5016.8,"moving_s":1139,"elev_m":7.2,"avg_ms":4.405,"max_ms":7.513,"effort":3,"kcal":148,"cadence":null},{"id":"17194194477","name":"Morning Ride","sport":"Ride","date":"2026-01-27","time":"08:16","dist_m":5492.9,"moving_s":1150,"elev_m":12.7,"avg_ms":4.776,"max_ms":8.929,"effort":3,"kcal":128,"cadence":null},{"id":"17195166009","name":"Afternoon Ride","sport":"Ride","date":"2026-01-27","time":"16:54","dist_m":4896.2,"moving_s":1053,"elev_m":2.6,"avg_ms":4.65,"max_ms":8.56,"effort":2,"kcal":85,"cadence":null},{"id":"17240061583","name":"Morning Ride","sport":"Ride","date":"2026-01-29","time":"07:56","dist_m":4953.8,"moving_s":969,"elev_m":8.3,"avg_ms":5.112,"max_ms":9.233,"effort":4,"kcal":136,"cadence":null},{"id":"17240061599","name":"Afternoon Ride","sport":"Ride","date":"2026-01-29","time":"17:09","dist_m":4800.5,"moving_s":862,"elev_m":2.6,"avg_ms":5.569,"max_ms":8.588,"effort":2,"kcal":108,"cadence":null},{"id":"17240061600","name":"Morning Ride","sport":"Ride","date":"2026-01-30","time":"08:20","dist_m":4936.3,"moving_s":1082,"elev_m":8.3,"avg_ms":4.562,"max_ms":7.58,"effort":2,"kcal":103,"cadence":null},{"id":"17240061571","name":"Afternoon Ride","sport":"Ride","date":"2026-01-30","time":"17:40","dist_m":4852.1,"moving_s":890,"elev_m":2.6,"avg_ms":5.452,"max_ms":8.333,"effort":2,"kcal":106,"cadence":null},{"id":"17240061570","name":"2x 15’ AT proberen (ging lekker)","sport":"Run","date":"2026-01-31","time":"15:39","dist_m":10425.7,"moving_s":3212,"elev_m":10.9,"avg_ms":3.246,"max_ms":4.429,"effort":50,"kcal":691,"cadence":91.8604},{"id":"17249701090","name":"Sunday long run","sport":"Run","date":"2026-02-01","time":"12:46","dist_m":14513.7,"moving_s":4624,"elev_m":11.3,"avg_ms":3.139,"max_ms":5.5,"effort":33,"kcal":936,"cadence":91.386,"desc":"Begint er weer op te lijken!"},{"id":"17257284397","name":"Morning Ride","sport":"Ride","date":"2026-02-02","time":"08:07","dist_m":5025.7,"moving_s":930,"elev_m":8.3,"avg_ms":5.404,"max_ms":8.87,"effort":2,"kcal":113,"cadence":null},{"id":"17262204433","name":"Afternoon Ride","sport":"Ride","date":"2026-02-02","time":"17:40","dist_m":5055,"moving_s":1131,"elev_m":4.6,"avg_ms":4.469,"max_ms":9.277,"effort":2,"kcal":139,"cadence":null},{"id":"17268515022","name":"Morning Ride","sport":"Ride","date":"2026-02-03","time":"07:52","dist_m":4992.3,"moving_s":928,"elev_m":8.4,"avg_ms":5.38,"max_ms":9.211,"effort":2,"kcal":104,"cadence":null},{"id":"17273745945","name":"Afternoon Ride","sport":"Ride","date":"2026-02-03","time":"17:39","dist_m":4836.9,"moving_s":942,"elev_m":2.7,"avg_ms":5.135,"max_ms":8.386,"effort":2,"kcal":117,"cadence":null},{"id":"17280410851","name":"Morning Ride","sport":"Ride","date":"2026-02-04","time":"07:54","dist_m":4937.1,"moving_s":896,"elev_m":8.4,"avg_ms":5.51,"max_ms":8.533,"effort":2,"kcal":118,"cadence":null},{"id":"17292182703","name":"Morning Ride","sport":"Ride","date":"2026-02-05","time":"07:52","dist_m":4946.6,"moving_s":909,"elev_m":8.3,"avg_ms":5.442,"max_ms":8.607,"effort":2,"kcal":119,"cadence":null},{"id":"17297126432","name":"Afternoon Ride","sport":"Ride","date":"2026-02-05","time":"17:41","dist_m":4879.4,"moving_s":868,"elev_m":2.5,"avg_ms":5.621,"max_ms":8.963,"effort":3,"kcal":106,"cadence":null},{"id":"17303339409","name":"Morning Ride","sport":"Ride","date":"2026-02-06","time":"08:18","dist_m":4936.8,"moving_s":1157,"elev_m":9.3,"avg_ms":4.267,"max_ms":7.077,"effort":2,"kcal":127,"cadence":null},{"id":"17305605119","name":"Afternoon Ride","sport":"Ride","date":"2026-02-06","time":"13:24","dist_m":4887.5,"moving_s":872,"elev_m":2.7,"avg_ms":5.605,"max_ms":8.733,"effort":2,"kcal":102,"cadence":null},{"id":"17318969045","name":"Met een blokje AT","sport":"Run","date":"2026-02-07","time":"16:08","dist_m":9427.6,"moving_s":2819,"elev_m":11.7,"avg_ms":3.344,"max_ms":4.329,"effort":41,"kcal":626,"cadence":91.8118,"desc":"10’ warm up\n21’ AT\n10’ Z2 \nCooldown"},{"id":"17329412251","name":"Z2 long run - Heerlijk ☀️!","sport":"Run","date":"2026-02-08","time":"13:49","dist_m":14979.5,"moving_s":4759,"elev_m":10.3,"avg_ms":3.148,"max_ms":5.78,"effort":28,"kcal":955,"cadence":89.2635},{"id":"17336188337","name":"Morning Ride","sport":"Ride","date":"2026-02-09","time":"07:55","dist_m":4916.6,"moving_s":919,"elev_m":8.4,"avg_ms":5.35,"max_ms":9.283,"effort":3,"kcal":110,"cadence":null},{"id":"17349769307","name":"Morning Ride","sport":"Ride","date":"2026-02-10","time":"08:13","dist_m":6053.2,"moving_s":1245,"elev_m":12.6,"avg_ms":4.862,"max_ms":9.06,"effort":3,"kcal":142,"cadence":null},{"id":"17352618904","name":"Afternoon Ride","sport":"Ride","date":"2026-02-10","time":"17:23","dist_m":4953.5,"moving_s":1061,"elev_m":2.6,"avg_ms":4.669,"max_ms":8.788,"effort":2,"kcal":91,"cadence":null},{"id":"17365684344","name":"Easy Z2","sport":"Run","date":"2026-02-11","time":"19:22","dist_m":6932,"moving_s":2236,"elev_m":15.4,"avg_ms":3.1,"max_ms":5.48,"effort":19,"kcal":466,"cadence":91.2965},{"id":"17370570967","name":"Morning Ride","sport":"Ride","date":"2026-02-12","time":"08:08","dist_m":4840.3,"moving_s":898,"elev_m":7.7,"avg_ms":5.39,"max_ms":10.517,"effort":2,"kcal":114,"cadence":null},{"id":"17375636791","name":"Evening Ride","sport":"Ride","date":"2026-02-12","time":"18:18","dist_m":4892,"moving_s":854,"elev_m":2.6,"avg_ms":5.728,"max_ms":9.63,"effort":2,"kcal":114,"cadence":null},{"id":"17381393676","name":"Morning Ride","sport":"Ride","date":"2026-02-13","time":"08:07","dist_m":4937.4,"moving_s":922,"elev_m":8.3,"avg_ms":5.355,"max_ms":9.35,"effort":3,"kcal":211,"cadence":null},{"id":"17385841241","name":"Afternoon Ride","sport":"Ride","date":"2026-02-13","time":"17:26","dist_m":4869.1,"moving_s":886,"elev_m":4.7,"avg_ms":5.496,"max_ms":10.367,"effort":3,"kcal":123,"cadence":null},{"id":"17395571267","name":"Zaterdag blokken 3x 8’ AT","sport":"Run","date":"2026-02-14","time":"14:54","dist_m":9581.3,"moving_s":3050,"elev_m":11.2,"avg_ms":3.141,"max_ms":5.833,"effort":39,"kcal":651,"cadence":89.5341,"desc":"Snelheid maken. Beetje verkouden dus ging nog niet vanzelf"},{"id":"17405552906","name":"Sunday long run Z2","sport":"Run","date":"2026-02-15","time":"12:35","dist_m":14628.8,"moving_s":4679,"elev_m":15.8,"avg_ms":3.126,"max_ms":5.85,"effort":29,"kcal":947,"cadence":91.2783,"desc":"Mooi langs de Volgerneerpolder! Wel ijzige wind tegen eerste helft"},{"id":"17418813355","name":"Easy herstel","sport":"Run","date":"2026-02-16","time":"18:53","dist_m":5405,"moving_s":1786,"elev_m":14.8,"avg_ms":3.026,"max_ms":4.12,"effort":15,"kcal":373,"cadence":91.1632},{"id":"17428117914","name":"Morning Ride","sport":"Ride","date":"2026-02-17","time":"08:08","dist_m":4958.7,"moving_s":923,"elev_m":8.4,"avg_ms":5.372,"max_ms":9.02,"effort":2,"kcal":115,"cadence":null},{"id":"17429619667","name":"Afternoon Ride","sport":"Ride","date":"2026-02-17","time":"17:32","dist_m":4941,"moving_s":875,"elev_m":4.8,"avg_ms":5.647,"max_ms":10.057,"effort":2,"kcal":114,"cadence":null},{"id":"17449976303","name":"Morning Ride","sport":"Ride","date":"2026-02-19","time":"08:07","dist_m":4970.4,"moving_s":905,"elev_m":8.2,"avg_ms":5.492,"max_ms":10.22,"effort":2,"kcal":94,"cadence":null},{"id":"17460829858","name":"Morning Ride","sport":"Ride","date":"2026-02-20","time":"08:20","dist_m":4919,"moving_s":1163,"elev_m":11.6,"avg_ms":4.23,"max_ms":6.725,"effort":2,"kcal":133,"cadence":null},{"id":"17460834926","name":"Afternoon Ride","sport":"Ride","date":"2026-02-20","time":"13:41","dist_m":4814,"moving_s":836,"elev_m":2.7,"avg_ms":5.758,"max_ms":8.95,"effort":2,"kcal":87,"cadence":null},{"id":"17463061260","name":"Blokjes op vrijdag","sport":"Run","date":"2026-02-20","time":"17:06","dist_m":10884.9,"moving_s":3391,"elev_m":9.5,"avg_ms":3.21,"max_ms":5.863,"effort":50,"kcal":738,"cadence":90.6307,"desc":"Warm up\n2x 15’ AT\nCool down"},{"id":"17474403887","name":"Z2 Long run","sport":"Run","date":"2026-02-21","time":"15:58","dist_m":17488,"moving_s":5706,"elev_m":15.2,"avg_ms":3.065,"max_ms":3.95,"effort":25,"kcal":1142,"cadence":89.6104,"desc":"Kilometers maken"},{"id":"17491059801","name":"Morning Ride","sport":"Ride","date":"2026-02-23","time":"07:53","dist_m":4803,"moving_s":906,"elev_m":6.3,"avg_ms":5.301,"max_ms":8.6,"effort":3,"kcal":113,"cadence":null},{"id":"17495828859","name":"Afternoon Ride","sport":"Ride","date":"2026-02-23","time":"17:11","dist_m":5074.2,"moving_s":1051,"elev_m":7.2,"avg_ms":4.828,"max_ms":9.943,"effort":3,"kcal":162,"cadence":null},{"id":"17502254685","name":"Morning Ride","sport":"Ride","date":"2026-02-24","time":"07:53","dist_m":4917.8,"moving_s":961,"elev_m":8,"avg_ms":5.117,"max_ms":8.883,"effort":2,"kcal":106,"cadence":null},{"id":"17508051385","name":"Evening Ride","sport":"Ride","date":"2026-02-24","time":"18:04","dist_m":4880.7,"moving_s":904,"elev_m":2.7,"avg_ms":5.399,"max_ms":8.956,"effort":3,"kcal":111,"cadence":null},{"id":"17527686627","name":"Lekker Z2 in Diever","sport":"Run","date":"2026-02-26","time":"09:42","dist_m":10999.5,"moving_s":3485,"elev_m":12.8,"avg_ms":3.156,"max_ms":4.567,"effort":23,"kcal":713,"cadence":89.353},{"id":"17530900519","name":"ATB ritje met de familie!","sport":"Ride","date":"2026-02-26","time":"14:17","dist_m":18887.6,"moving_s":5397,"elev_m":38.1,"avg_ms":3.5,"max_ms":7.05,"effort":16,"kcal":570,"cadence":null},{"id":"17540250335","name":"Wandelen met de fam","sport":"Walk","date":"2026-02-27","time":"10:54","dist_m":6679.7,"moving_s":5564,"elev_m":7.1,"avg_ms":1.201,"max_ms":2.386,"effort":6,"kcal":244,"cadence":51.452},{"id":"17549121863","name":"Even wakker worden met blokjes","sport":"Run","date":"2026-02-28","time":"08:43","dist_m":11417.3,"moving_s":3579,"elev_m":13.1,"avg_ms":3.19,"max_ms":6.36,"effort":42,"kcal":745,"cadence":89.7875,"desc":"Warm up\n6x 1000 ~4:15\nCool down"},{"id":"17565087475","name":"Sunday long run Z2","sport":"Run","date":"2026-03-01","time":"13:18","dist_m":14581.9,"moving_s":4556,"elev_m":11,"avg_ms":3.201,"max_ms":5.329,"effort":35,"kcal":934,"cadence":93.4579,"desc":"En alle motorrijders met een TT complex zijn er ook weer 💨💨💨"},{"id":"17572660767","name":"Morning Ride","sport":"Ride","date":"2026-03-02","time":"07:52","dist_m":4888.1,"moving_s":942,"elev_m":8.4,"avg_ms":5.189,"max_ms":9.657,"effort":2,"kcal":95,"cadence":null},{"id":"17577776511","name":"Afternoon Ride","sport":"Ride","date":"2026-03-02","time":"17:32","dist_m":4937.5,"moving_s":1037,"elev_m":5.3,"avg_ms":4.761,"max_ms":9.4,"effort":2,"kcal":88,"cadence":null},{"id":"17590244168","name":"Afternoon Ride","sport":"Ride","date":"2026-03-03","time":"17:36","dist_m":4852,"moving_s":894,"elev_m":2.6,"avg_ms":5.427,"max_ms":9.2,"effort":2,"kcal":119,"cadence":null},{"id":"17604371691","name":"Z2 kilometers maken","sport":"Run","date":"2026-03-04","time":"18:53","dist_m":7412.1,"moving_s":2309,"elev_m":13.4,"avg_ms":3.21,"max_ms":4.817,"effort":15,"kcal":484,"cadence":92.194,"desc":"Nog even in de avond"},{"id":"17609886855","name":"Morning Ride","sport":"Ride","date":"2026-03-05","time":"08:20","dist_m":4943.7,"moving_s":889,"elev_m":10.7,"avg_ms":5.561,"max_ms":9.117,"effort":4,"kcal":123,"cadence":null},{"id":"17613912127","name":"Afternoon Ride","sport":"Ride","date":"2026-03-05","time":"14:06","dist_m":4912.5,"moving_s":913,"elev_m":5.2,"avg_ms":5.381,"max_ms":10.06,"effort":2,"kcal":109,"cadence":null},{"id":"17632291464","name":"8x 800m doeltempo","sport":"Run","date":"2026-03-07","time":"08:26","dist_m":11091.8,"moving_s":3862,"elev_m":9.5,"avg_ms":2.872,"max_ms":5.667,"effort":47,"kcal":769,"cadence":85.5691,"desc":"Warm up\n8x 800m\nCool down"},{"id":"17651289271","name":"Duurloopje inclusief 3 rondjes baan met dochter","sport":"Run","date":"2026-03-08","time":"16:29","dist_m":10635.2,"moving_s":3704,"elev_m":16.4,"avg_ms":2.871,"max_ms":5.2,"effort":22,"kcal":684,"cadence":85.602},{"id":"17656707106","name":"Morning Ride","sport":"Ride","date":"2026-03-09","time":"08:15","dist_m":5365.1,"moving_s":1129,"elev_m":9.4,"avg_ms":4.752,"max_ms":9.7,"effort":3,"kcal":130,"cadence":null},{"id":"17661856144","name":"Afternoon Ride","sport":"Ride","date":"2026-03-09","time":"17:02","dist_m":4962.8,"moving_s":1051,"elev_m":2.6,"avg_ms":4.722,"max_ms":9.4,"effort":3,"kcal":132,"cadence":null},{"id":"17687257197","name":"Easy herstel met 1 stride","sport":"Run","date":"2026-03-11","time":"17:41","dist_m":4806.7,"moving_s":1454,"elev_m":12,"avg_ms":3.306,"max_ms":4.763,"effort":10,"kcal":314,"cadence":93.4508,"desc":"Plus vergeten Garmin te starten dus 800m gemist"},{"id":"17693611572","name":"Morning Ride","sport":"Ride","date":"2026-03-12","time":"08:01","dist_m":4938.6,"moving_s":975,"elev_m":9,"avg_ms":5.065,"max_ms":10.46,"effort":3,"kcal":120,"cadence":null},{"id":"17699572312","name":"Evening Ride","sport":"Ride","date":"2026-03-12","time":"18:01","dist_m":5701.5,"moving_s":978,"elev_m":2.7,"avg_ms":5.83,"max_ms":10.483,"effort":3,"kcal":140,"cadence":null},{"id":"17711256625","name":"Morning Ride","sport":"Ride","date":"2026-03-13","time":"08:00","dist_m":4922.3,"moving_s":966,"elev_m":8,"avg_ms":5.096,"max_ms":8.34,"effort":3,"kcal":118,"cadence":null},{"id":"17711265150","name":"Afternoon Ride","sport":"Ride","date":"2026-03-13","time":"17:19","dist_m":4884.5,"moving_s":948,"elev_m":2.8,"avg_ms":5.152,"max_ms":8.36,"effort":2,"kcal":107,"cadence":null},{"id":"17719173736","name":"Beetje relaxt herstel en met dochter 2 trainen","sport":"Run","date":"2026-03-14","time":"13:27","dist_m":7598,"moving_s":2926,"elev_m":4.6,"avg_ms":2.597,"max_ms":5.167,"effort":15,"kcal":529,"cadence":85.2221},{"id":"17728997433","name":"Louis Vinkloop 10k - family affair","sport":"Run","date":"2026-03-15","time":"11:00","dist_m":10018.4,"moving_s":2548,"elev_m":8.9,"avg_ms":3.929,"max_ms":4.771,"effort":113,"kcal":667,"cadence":94.5679,"desc":"Dank Floris Klinkert voor het hazen! En een mooie eerste plek voor Lisa en nichtje Wieke 2e op de kids run!"},{"id":"17750531952","name":"Morning Ride","sport":"Ride","date":"2026-03-17","time":"08:02","dist_m":4903.8,"moving_s":850,"elev_m":11.2,"avg_ms":5.769,"max_ms":9.68,"effort":5,"kcal":126,"cadence":null},{"id":"17781905274","name":"Z2 after work","sport":"Run","date":"2026-03-19","time":"18:08","dist_m":7270.6,"moving_s":2207,"elev_m":9.2,"avg_ms":3.294,"max_ms":6.086,"effort":12,"kcal":469,"cadence":93.32,"desc":"Z2 wordt ook steeds sneller merk ik na 4,5 maand opbouwen"},{"id":"17787892059","name":"Morning Ride","sport":"Ride","date":"2026-03-20","time":"08:15","dist_m":5049.7,"moving_s":1073,"elev_m":11.5,"avg_ms":4.706,"max_ms":8.117,"effort":2,"kcal":107,"cadence":null},{"id":"17790958344","name":"Afternoon Ride","sport":"Ride","date":"2026-03-20","time":"13:47","dist_m":4830.3,"moving_s":871,"elev_m":2.5,"avg_ms":5.546,"max_ms":8.522,"effort":2,"kcal":95,"cadence":null},{"id":"17806368698","name":"2x 15’ AT","sport":"Run","date":"2026-03-21","time":"17:38","dist_m":9792,"moving_s":2987,"elev_m":12.2,"avg_ms":3.278,"max_ms":5.54,"effort":37,"kcal":660,"cadence":91.7788,"desc":"Plus warm up en cool down"},{"id":"17819352263","name":"Z2 long run ☀️😎","sport":"Run","date":"2026-03-22","time":"16:52","dist_m":14549.3,"moving_s":4357,"elev_m":13.6,"avg_ms":3.339,"max_ms":4.867,"effort":41,"kcal":936,"cadence":92.9607,"desc":"Heerlijk!"},{"id":"17824267003","name":"Morning Ride","sport":"Ride","date":"2026-03-23","time":"07:47","dist_m":4927.2,"moving_s":909,"elev_m":7.9,"avg_ms":5.42,"max_ms":9.24,"effort":2,"kcal":116,"cadence":null},{"id":"17829774974","name":"Afternoon Ride","sport":"Ride","date":"2026-03-23","time":"17:16","dist_m":5071.1,"moving_s":1121,"elev_m":2.7,"avg_ms":4.524,"max_ms":9.314,"effort":4,"kcal":145,"cadence":null},{"id":"17856606486","name":"Easy after dinner","sport":"Run","date":"2026-03-25","time":"18:45","dist_m":7517.1,"moving_s":2299,"elev_m":13.1,"avg_ms":3.27,"max_ms":5.213,"effort":17,"kcal":454,"cadence":92.4211},{"id":"17874086857","name":"Morning Ride","sport":"Ride","date":"2026-03-27","time":"08:24","dist_m":5054,"moving_s":1191,"elev_m":13.8,"avg_ms":4.243,"max_ms":9.98,"effort":2,"kcal":108,"cadence":null},{"id":"17879068005","name":"Afternoon Ride","sport":"Ride","date":"2026-03-27","time":"17:30","dist_m":4847.4,"moving_s":951,"elev_m":2.5,"avg_ms":5.097,"max_ms":7.733,"effort":3,"kcal":137,"cadence":null},{"id":"17890519816","name":"3x 10’ HM tempo blokken","sport":"Run","date":"2026-03-28","time":"16:06","dist_m":10575,"moving_s":3029,"elev_m":9.6,"avg_ms":3.491,"max_ms":6.763,"effort":67,"kcal":713,"cadence":94.7384,"desc":"+ Warm up en cool down"},{"id":"17902463639","name":"Zondagmiddag aerobe motor","sport":"Run","date":"2026-03-29","time":"15:34","dist_m":15182.1,"moving_s":4595,"elev_m":9,"avg_ms":3.304,"max_ms":4.4,"effort":25,"kcal":956,"cadence":92.6663,"desc":"Wel veel 💨💨💨"},{"id":"17908939941","name":"Morning Ride","sport":"Ride","date":"2026-03-30","time":"08:01","dist_m":5011.7,"moving_s":952,"elev_m":12.3,"avg_ms":5.264,"max_ms":9.84,"effort":4,"kcal":128,"cadence":null},{"id":"17913608502","name":"Afternoon Ride","sport":"Ride","date":"2026-03-30","time":"17:21","dist_m":4850.1,"moving_s":1015,"elev_m":2.6,"avg_ms":4.778,"max_ms":10.2,"effort":3,"kcal":177,"cadence":null},{"id":"17953643015","name":"Morning Ride","sport":"Ride","date":"2026-03-31","time":"08:00","dist_m":4942.6,"moving_s":939,"elev_m":8.4,"avg_ms":5.264,"max_ms":10.15,"effort":2,"kcal":112,"cadence":null},{"id":"17953643209","name":"Afternoon Ride","sport":"Ride","date":"2026-03-31","time":"17:34","dist_m":4797,"moving_s":965,"elev_m":2.6,"avg_ms":4.971,"max_ms":7.62,"effort":2,"kcal":95,"cadence":null},{"id":"17953648378","name":"After dinner Z2 rondje","sport":"Run","date":"2026-04-02","time":"19:47","dist_m":7156.2,"moving_s":2101,"elev_m":13.9,"avg_ms":3.406,"max_ms":5.133,"effort":15,"kcal":461,"cadence":92.3267},{"id":"17976118042","name":"Yasso 800’s 🥵","sport":"Run","date":"2026-04-04","time":"15:40","dist_m":12246.2,"moving_s":3816,"elev_m":15.8,"avg_ms":3.209,"max_ms":5.6,"effort":63,"kcal":845,"cadence":92.1553,"desc":"Warm up\n8x 800m 4:10 & 3’ rust\nCool down"},{"id":"17988453608","name":"Sunday long run Z2","sport":"Run","date":"2026-04-05","time":"14:51","dist_m":16548.8,"moving_s":5205,"elev_m":21.7,"avg_ms":3.179,"max_ms":4.844,"effort":32,"kcal":1052,"cadence":91.1811,"desc":"Met veel 💨 tegen op de terugweg"},{"id":"18018325319","name":"Morning Ride","sport":"Ride","date":"2026-04-07","time":"07:45","dist_m":4912,"moving_s":886,"elev_m":7.6,"avg_ms":5.544,"max_ms":9.3,"effort":2,"kcal":109,"cadence":null},{"id":"18018325191","name":"Afternoon Ride","sport":"Ride","date":"2026-04-07","time":"17:14","dist_m":5559.2,"moving_s":1116,"elev_m":2.5,"avg_ms":4.981,"max_ms":8.983,"effort":3,"kcal":121,"cadence":null},{"id":"18031193806","name":"Hoog Z2 avondrondje","sport":"Run","date":"2026-04-08","time":"19:42","dist_m":7213.9,"moving_s":2115,"elev_m":16.3,"avg_ms":3.411,"max_ms":5.52,"effort":20,"kcal":465,"cadence":92.5893},{"id":"18065257308","name":"2x 15’ HM tempo","sport":"Run","date":"2026-04-11","time":"13:10","dist_m":9899.5,"moving_s":2860,"elev_m":13.8,"avg_ms":3.461,"max_ms":4.714,"effort":48,"kcal":669,"cadence":93.445,"desc":"10’ warm up\n2x 15 HM tempo \nCool down"},{"id":"18080754695","name":"Long(er) run Z2","sport":"Run","date":"2026-04-12","time":"14:55","dist_m":13182.5,"moving_s":3979,"elev_m":10.6,"avg_ms":3.313,"max_ms":4.711,"effort":24,"kcal":832,"cadence":91.2042},{"id":"18100697341","name":"Morning Ride","sport":"Ride","date":"2026-04-14","time":"08:01","dist_m":4838,"moving_s":921,"elev_m":7.1,"avg_ms":5.253,"max_ms":8.68,"effort":2,"kcal":108,"cadence":null},{"id":"18107751612","name":"Afternoon Ride","sport":"Ride","date":"2026-04-14","time":"17:32","dist_m":4762.8,"moving_s":950,"elev_m":4.3,"avg_ms":5.013,"max_ms":8.117,"effort":2,"kcal":103,"cadence":null},{"id":"18123514942","name":"Avondrondje voor zonsondergang Z2","sport":"Run","date":"2026-04-15","time":"19:47","dist_m":7283.9,"moving_s":2159,"elev_m":9.4,"avg_ms":3.374,"max_ms":5.36,"effort":19,"kcal":480,"cadence":92.4972},{"id":"18143912001","name":"Morning Ride","sport":"Ride","date":"2026-04-17","time":"07:47","dist_m":4941.5,"moving_s":862,"elev_m":7.4,"avg_ms":5.733,"max_ms":9.3,"effort":2,"kcal":325,"cadence":null},{"id":"18143918435","name":"Afternoon Ride","sport":"Ride","date":"2026-04-17","time":"13:41","dist_m":3704.9,"moving_s":512,"elev_m":2.2,"avg_ms":7.236,"max_ms":10.025,"effort":3,"kcal":86,"cadence":null},{"id":"18159532278","name":"Tempo! 10x400m overspeed","sport":"Run","date":"2026-04-18","time":"15:52","dist_m":8607,"moving_s":2501,"elev_m":7.6,"avg_ms":3.441,"max_ms":5.74,"effort":24,"kcal":596,"cadence":91.4633,"desc":"10’ warm up\n10x 400m < 4:00 & 1:30 rust\nCool down"},{"id":"18172092667","name":"Z2 long run","sport":"Run","date":"2026-04-19","time":"13:37","dist_m":17411.4,"moving_s":5142,"elev_m":12.4,"avg_ms":3.386,"max_ms":5.88,"effort":38,"kcal":1096,"cadence":90.7214,"desc":"Topweer om te lopen!"},{"id":"18180298180","name":"Morning Ride","sport":"Ride","date":"2026-04-20","time":"08:02","dist_m":4581.5,"moving_s":862,"elev_m":6.2,"avg_ms":5.315,"max_ms":9.357,"effort":2,"kcal":101,"cadence":null},{"id":"18186292666","name":"Afternoon Ride","sport":"Ride","date":"2026-04-20","time":"17:33","dist_m":3887.2,"moving_s":772,"elev_m":8.6,"avg_ms":5.035,"max_ms":9.633,"effort":2,"kcal":85,"cadence":null},{"id":"18193487100","name":"Morning Ride","sport":"Ride","date":"2026-04-21","time":"08:00","dist_m":4997.5,"moving_s":946,"elev_m":7.7,"avg_ms":5.283,"max_ms":10.586,"effort":2,"kcal":105,"cadence":null},{"id":"18216358468","name":"Nog even snel een avondrondje voor het donker","sport":"Run","date":"2026-04-22","time":"20:24","dist_m":5478.4,"moving_s":1643,"elev_m":11.9,"avg_ms":3.334,"max_ms":4.517,"effort":15,"kcal":361,"cadence":91.3891},{"id":"18252137992","name":"800-400-200","sport":"Run","date":"2026-04-25","time":"14:20","dist_m":11502,"moving_s":3685,"elev_m":9.6,"avg_ms":3.121,"max_ms":5.238,"effort":56,"kcal":796,"cadence":85.3275,"desc":"2km warming up\n4x 800m\n6x 400m\n6x 200m\nProgressief\nCooldown"},{"id":"18266976858","name":"Z2 rondje Twiske in de zon","sport":"Run","date":"2026-04-26","time":"14:19","dist_m":20995.2,"moving_s":6507,"elev_m":15.7,"avg_ms":3.227,"max_ms":9.56,"effort":46,"kcal":1367,"cadence":89.4574},{"id":"18293441573","name":"Z2 rondje + 1km harder","sport":"Run","date":"2026-04-28","time":"16:41","dist_m":8615.2,"moving_s":2572,"elev_m":9.7,"avg_ms":3.35,"max_ms":4.343,"effort":24,"kcal":561,"cadence":89.6409,"desc":"Warm up\nZ2 steady\n1000m HM tempo\nCool down"},{"id":"18320602049","name":"Namiddagrit","sport":"Ride","date":"2026-04-30","time":"13:46","dist_m":13946.2,"moving_s":3530,"elev_m":57.8,"avg_ms":3.951,"max_ms":8.486,"effort":null,"kcal":274,"cadence":null},{"id":"18320559865","name":"Z2 toeristisch rondje inclusief beklimming Vuurboetsduin als toetje","sport":"Run","date":"2026-04-30","time":"16:56","dist_m":8518,"moving_s":2671,"elev_m":66.8,"avg_ms":3.189,"max_ms":4.029,"effort":16,"kcal":572,"cadence":87.5394},{"id":"18333823231","name":"Namiddagwandeling","sport":"Walk","date":"2026-05-01","time":"13:34","dist_m":7175.8,"moving_s":6598,"elev_m":95,"avg_ms":1.088,"max_ms":1.831,"effort":null,"kcal":591,"cadence":null},{"id":"18334900500","name":"2x 15’ AnT op Vlieland","sport":"Run","date":"2026-05-01","time":"17:00","dist_m":10162.8,"moving_s":3108,"elev_m":38,"avg_ms":3.27,"max_ms":4.543,"effort":48,"kcal":671,"cadence":86.3444,"desc":"Warm up\n2x 15’ AnT met heuvels\nCool down"},{"id":"18360644040","name":"Z2 long run na de regen","sport":"Run","date":"2026-05-03","time":"14:48","dist_m":18351.4,"moving_s":5440,"elev_m":13.8,"avg_ms":3.373,"max_ms":6.7,"effort":47,"kcal":1169,"cadence":88.1647},{"id":"18402752459","name":"After dinner rondje kilometers sprokkelen","sport":"Run","date":"2026-05-06","time":"19:34","dist_m":7849.6,"moving_s":2273,"elev_m":14.3,"avg_ms":3.453,"max_ms":6.2,"effort":18,"kcal":504,"cadence":88.5862},{"id":"18440848064","name":"Tempo intervallen","sport":"Run","date":"2026-05-09","time":"16:30","dist_m":13267.3,"moving_s":4205,"elev_m":9.8,"avg_ms":3.155,"max_ms":7.033,"effort":38,"kcal":873,"cadence":85.245,"desc":"Warm up\n12x 400m\n10x 200m\nCool down"},{"id":"18453462047","name":"Z2 long run - wind tegen en wind mee","sport":"Run","date":"2026-05-10","time":"14:38","dist_m":21125.5,"moving_s":6487,"elev_m":14.6,"avg_ms":3.257,"max_ms":4.871,"effort":60,"kcal":1383,"cadence":88.6577,"desc":"Ging niet vanzelf. Wel een lepelaar gezien."},{"id":"18460029975","name":"Morning Ride","sport":"Ride","date":"2026-05-11","time":"07:47","dist_m":4877.5,"moving_s":881,"elev_m":7.7,"avg_ms":5.536,"max_ms":10.02,"effort":3,"kcal":112,"cadence":null},{"id":"18465542777","name":"Afternoon Ride","sport":"Ride","date":"2026-05-11","time":"17:15","dist_m":4906.5,"moving_s":859,"elev_m":7.3,"avg_ms":5.712,"max_ms":9.97,"effort":4,"kcal":131,"cadence":null},{"id":"18472999410","name":"Morning Ride","sport":"Ride","date":"2026-05-12","time":"07:43","dist_m":4876.6,"moving_s":965,"elev_m":7.8,"avg_ms":5.053,"max_ms":9.467,"effort":2,"kcal":108,"cadence":null},{"id":"18505967726","name":"Z2 hemelvaartloopje","sport":"Run","date":"2026-05-14","time":"17:08","dist_m":9028.6,"moving_s":2682,"elev_m":7.4,"avg_ms":3.366,"max_ms":5.5,"effort":12,"kcal":560,"cadence":88.7341},{"id":"18529950683","name":"400/400 under overs","sport":"Run","date":"2026-05-16","time":"15:01","dist_m":11387.9,"moving_s":3213,"elev_m":9.7,"avg_ms":3.544,"max_ms":5.383,"effort":49,"kcal":740,"cadence":91.4186,"desc":"3,5km warm up\n400m under 400m overspeed \nCool down"},{"id":"18541474680","name":"Z2 rondje - niet vooruit te branden","sport":"Run","date":"2026-05-17","time":"12:13","dist_m":14473.7,"moving_s":4512,"elev_m":11.8,"avg_ms":3.208,"max_ms":4.438,"effort":47,"kcal":971,"cadence":89.0612},{"id":"18551059040","name":"Morning Ride","sport":"Ride","date":"2026-05-18","time":"07:59","dist_m":4982.1,"moving_s":968,"elev_m":11.7,"avg_ms":5.147,"max_ms":8.825,"effort":2,"kcal":119,"cadence":null},{"id":"18556063291","name":"Afternoon Ride","sport":"Ride","date":"2026-05-18","time":"17:02","dist_m":4934.2,"moving_s":996,"elev_m":5.6,"avg_ms":4.954,"max_ms":9.35,"effort":2,"kcal":127,"cadence":null},{"id":"18563811495","name":"Morning Ride","sport":"Ride","date":"2026-05-19","time":"07:47","dist_m":4982.6,"moving_s":884,"elev_m":8.3,"avg_ms":5.636,"max_ms":9.04,"effort":3,"kcal":118,"cadence":null},{"id":"18577640198","name":"Morning Ride","sport":"Ride","date":"2026-05-20","time":"07:46","dist_m":4942.7,"moving_s":903,"elev_m":7.9,"avg_ms":5.474,"max_ms":10.14,"effort":2,"kcal":107,"cadence":null},{"id":"18584448064","name":"Evening Ride","sport":"Ride","date":"2026-05-20","time":"18:13","dist_m":4855.1,"moving_s":791,"elev_m":2.3,"avg_ms":6.138,"max_ms":10.42,"effort":2,"kcal":107,"cadence":null},{"id":"18585727860","name":"Snel rondje Z2/3","sport":"Run","date":"2026-05-20","time":"19:38","dist_m":9296.1,"moving_s":2647,"elev_m":9.5,"avg_ms":3.512,"max_ms":11.52,"effort":26,"kcal":590,"cadence":89.5697},{"id":"18623657661","name":"Warm maar lekker. 2x 3km AnT","sport":"Run","date":"2026-05-23","time":"16:59","dist_m":11353.8,"moving_s":3352,"elev_m":9.8,"avg_ms":3.387,"max_ms":6,"effort":60,"kcal":770,"cadence":89.7287,"desc":"3 km warm up\n2x 3km ~4:30 + 500m herstel\nCool down (lastig met dit weer, meer less hot)"},{"id":"18634092474","name":"Heerlijk Z2, niet meer benauwd","sport":"Run","date":"2026-05-24","time":"12:18","dist_m":18450,"moving_s":5569,"elev_m":13.9,"avg_ms":3.313,"max_ms":4.714,"effort":50,"kcal":1201,"cadence":87.208,"desc":"Wel warm dus kalm aan"},{"id":"18657132105","name":"Morning Ride","sport":"Ride","date":"2026-05-26","time":"07:45","dist_m":4929,"moving_s":975,"elev_m":7.6,"avg_ms":5.055,"max_ms":8.62,"effort":2,"kcal":99,"cadence":null},{"id":"18693143658","name":"Z2 rondje + 1 stride 😎","sport":"Run","date":"2026-05-28","time":"20:14","dist_m":7837.1,"moving_s":2189,"elev_m":16,"avg_ms":3.58,"max_ms":5.225,"effort":24,"kcal":500,"cadence":90.4578},{"id":"18716835315","name":"2km intervals progressief","sport":"Run","date":"2026-05-30","time":"15:57","dist_m":11682.4,"moving_s":3355,"elev_m":9.8,"avg_ms":3.482,"max_ms":4.663,"effort":56,"kcal":782,"cadence":89.6248,"desc":"Opbouwen per 2km tot 10k pace\n\nOok een ooievaar gezien 😎"},{"id":"18728097160","name":"Z2 long run","sport":"Run","date":"2026-05-31","time":"12:27","dist_m":17240.9,"moving_s":5293,"elev_m":15,"avg_ms":3.257,"max_ms":5.217,"effort":49,"kcal":1132,"cadence":88.6831,"desc":"Warm en benauwd 🥵 dus lastig om Hf te controleren"},{"id":"18774309320","name":"Z2 after dinner","sport":"Run","date":"2026-06-03","time":"20:15","dist_m":7862.4,"moving_s":2313,"elev_m":14.3,"avg_ms":3.399,"max_ms":4.657,"effort":16,"kcal":507,"cadence":90.3588,"desc":"Traag op gang en regen","hr":144.8,"hrmax":157,"laps":[{"t":313,"d":1000,"hr":143.7},{"t":299,"d":1000,"hr":145.2},{"t":317,"d":1000,"hr":136.7},{"t":285,"d":1000,"hr":142.2},{"t":291,"d":1000,"hr":146.3},{"t":284,"d":1000,"hr":147.6},{"t":284,"d":1000,"hr":148.5},{"t":256,"d":862,"hr":149.2}]},{"id":"18793175295","name":"Ochtendrit","sport":"Ride","date":"2026-06-05","time":"08:25","dist_m":5063.9,"moving_s":986,"elev_m":17.6,"avg_ms":5.136,"max_ms":7.95,"effort":3,"kcal":178,"cadence":null},{"id":"18798453654","name":"Namiddagrit","sport":"Ride","date":"2026-06-05","time":"17:32","dist_m":4926.7,"moving_s":838,"elev_m":2.9,"avg_ms":5.879,"max_ms":12.189,"effort":1,"kcal":71,"cadence":null},{"id":"18812315115","name":"Broken 600’s 🥵🤯 VO2max improve","sport":"Run","date":"2026-06-06","time":"16:38","dist_m":14736.4,"moving_s":4587,"elev_m":14,"avg_ms":3.213,"max_ms":5.38,"effort":45,"kcal":953,"cadence":85.7781,"desc":"4,5km warm up\r\n12x 300/300 versnellend\r\nCool down","hr":145.4,"hrmax":179,"laps":[{"t":316,"d":1000,"hr":127.1},{"t":298,"d":1000,"hr":135.8},{"t":296,"d":1000,"hr":139.5},{"t":294,"d":1000,"hr":141.4},{"t":144,"d":500,"hr":142.1},{"t":89,"d":146,"hr":123.2},{"t":77,"d":300,"hr":137.6},{"t":68,"d":300,"hr":158.1},{"t":89,"d":156,"hr":139.3},{"t":75,"d":300,"hr":138.0},{"t":71,"d":300,"hr":162.8},{"t":89,"d":134,"hr":140.1},{"t":79,"d":300,"hr":138.2},{"t":69,"d":300,"hr":158.2},{"t":89,"d":152,"hr":142.0},{"t":74,"d":300,"hr":140.6},{"t":69,"d":300,"hr":162.8},{"t":89,"d":171,"hr":148.4},{"t":72,"d":300,"hr":140.4},{"t":68,"d":300,"hr":166.3},{"t":89,"d":197,"hr":157.4},{"t":77,"d":300,"hr":142.2},{"t":70,"d":300,"hr":165.2},{"t":89,"d":149,"hr":146.4},{"t":75,"d":300,"hr":145.4},{"t":72,"d":300,"hr":168.2},{"t":89,"d":145,"hr":147.5},{"t":75,"d":300,"hr":145.9},{"t":69,"d":300,"hr":171.1},{"t":89,"d":144,"hr":149.5},{"t":74,"d":300,"hr":147.3},{"t":70,"d":300,"hr":169.2},{"t":89,"d":144,"hr":145.9},{"t":76,"d":300,"hr":144.5},{"t":68,"d":300,"hr":169.5},{"t":89,"d":141,"hr":146.8},{"t":75,"d":300,"hr":145.3},{"t":66,"d":300,"hr":168.9},{"t":89,"d":153,"hr":151.6},{"t":77,"d":300,"hr":142.8},{"t":67,"d":300,"hr":169.4},{"t":89,"d":140,"hr":148.4},{"t":314,"d":1000,"hr":138.7},{"t":22,"d":63,"hr":139.3}]},{"id":"18825009240","name":"Z2 wind mee wind tegen ☀️😎","sport":"Run","date":"2026-06-07","time":"14:41","dist_m":18241.7,"moving_s":5546,"elev_m":13.8,"avg_ms":3.289,"max_ms":4.22,"effort":58,"kcal":1172,"cadence":89.6718,"hr":148.7,"hrmax":162,"laps":[{"t":329,"d":1000,"hr":144.1},{"t":292,"d":1000,"hr":140.1},{"t":292,"d":1000,"hr":142.6},{"t":292,"d":1000,"hr":144.7},{"t":292,"d":1000,"hr":146.3},{"t":297,"d":1000,"hr":148.7},{"t":295,"d":1000,"hr":148.8},{"t":314,"d":1000,"hr":148.5},{"t":299,"d":1000,"hr":148.7},{"t":301,"d":1000,"hr":149.0},{"t":303,"d":1000,"hr":150.4},{"t":312,"d":1000,"hr":151.1},{"t":309,"d":1000,"hr":150.8},{"t":316,"d":1000,"hr":151.3},{"t":317,"d":1000,"hr":151.3},{"t":317,"d":1000,"hr":150.3},{"t":307,"d":1000,"hr":152.5},{"t":313,"d":1000,"hr":153.9},{"t":79,"d":242,"hr":154.7}]},{"id":"18832852725","name":"Ochtendrit","sport":"Ride","date":"2026-06-08","time":"07:59","dist_m":4977.7,"moving_s":1078,"elev_m":7.9,"avg_ms":4.618,"max_ms":7.617,"effort":2,"kcal":146,"cadence":null},{"id":"18846194796","name":"Ochtendrit","sport":"Ride","date":"2026-06-09","time":"07:45","dist_m":5004.9,"moving_s":1066,"elev_m":7.6,"avg_ms":4.695,"max_ms":9.163,"effort":2,"kcal":140,"cadence":null},{"id":"18852304475","name":"Namiddagrit","sport":"Ride","date":"2026-06-09","time":"17:18","dist_m":5002,"moving_s":1206,"elev_m":2.4,"avg_ms":4.148,"max_ms":9.329,"effort":4,"kcal":137,"cadence":null},{"id":"18860645036","name":"Morning Ride","sport":"Ride","date":"2026-06-10","time":"08:00","dist_m":5015.8,"moving_s":1006,"elev_m":10.3,"avg_ms":4.986,"max_ms":9.45,"effort":2,"kcal":146,"cadence":null},{"id":"18866451965","name":"Namiddagrit","sport":"Ride","date":"2026-06-10","time":"17:33","dist_m":4875.1,"moving_s":931,"elev_m":2.2,"avg_ms":5.236,"max_ms":9.617,"effort":2,"kcal":116,"cadence":null},{"id":"18867286225","name":"Pre-dinner loopje","sport":"Run","date":"2026-06-10","time":"18:14","dist_m":7818.1,"moving_s":2273,"elev_m":16.3,"avg_ms":3.44,"max_ms":4.28,"effort":16,"kcal":493,"cadence":88.452,"desc":"Lekker weer","hr":145.9,"hrmax":155,"laps":[{"t":302,"d":1000,"hr":136.8},{"t":285,"d":1000,"hr":145.9},{"t":287,"d":1000,"hr":144.3},{"t":289,"d":1000,"hr":147.2},{"t":291,"d":1000,"hr":148.9},{"t":289,"d":1000,"hr":148.5},{"t":286,"d":1000,"hr":148.2},{"t":245,"d":819,"hr":148.2}]},{"id":"18901185654","name":"Warm up (en dan het verkeerde knopje) part 1","sport":"Run","date":"2026-06-13","time":"12:05","dist_m":3173.9,"moving_s":1163,"elev_m":88.7,"avg_ms":2.729,"max_ms":3.56,"effort":12,"kcal":240,"cadence":84.989,"hr":143.7,"hrmax":170,"laps":[{"t":323,"d":1000,"hr":137.3},{"t":393,"d":1000,"hr":136.6},{"t":365,"d":1000,"hr":155.7},{"t":45,"d":134,"hr":152.2},{"t":5,"d":14,"hr":145.0},{"t":3,"d":12,"hr":142.7},{"t":3,"d":5,"hr":140.0},{"t":36,"d":5,"hr":135.0},{"t":9,"d":0,"hr":0.0},{"t":3,"d":0,"hr":0.0}]},{"id":"18901861704","name":"2x 3000m @4:30 (part 2)","sport":"Run","date":"2026-06-13","time":"12:28","dist_m":8618.8,"moving_s":2540,"elev_m":46.4,"avg_ms":3.393,"max_ms":4.32,"effort":41,"kcal":563,"cadence":89.0587,"desc":"Met wind tegen en bergen 😎","hr":155.0,"hrmax":177,"laps":[{"t":12,"d":7,"hr":103.3},{"t":274,"d":1000,"hr":140.5},{"t":266,"d":1000,"hr":155.0},{"t":278,"d":1000,"hr":157.9},{"t":171,"d":500,"hr":148.4},{"t":279,"d":1000,"hr":164.8},{"t":278,"d":1000,"hr":171.7},{"t":264,"d":1000,"hr":166.5},{"t":173,"d":500,"hr":157.8},{"t":336,"d":1000,"hr":140.5},{"t":204,"d":612,"hr":147.5}]},{"id":"18912383296","name":"Wake up Z2 met heuvels","sport":"Run","date":"2026-06-14","time":"07:55","dist_m":15492.8,"moving_s":4800,"elev_m":158.6,"avg_ms":3.228,"max_ms":4.28,"effort":33,"kcal":980,"cadence":88.345,"hr":142.2,"hrmax":162,"laps":[{"t":345,"d":1000,"hr":120.6},{"t":326,"d":1000,"hr":141.4},{"t":326,"d":1000,"hr":153.7},{"t":293,"d":1000,"hr":141.6},{"t":294,"d":1000,"hr":138.0},{"t":304,"d":1000,"hr":144.9},{"t":303,"d":1000,"hr":141.8},{"t":302,"d":1000,"hr":138.7},{"t":333,"d":1000,"hr":142.5},{"t":301,"d":1000,"hr":142.5},{"t":320,"d":1000,"hr":147.9},{"t":301,"d":1000,"hr":146.9},{"t":299,"d":1000,"hr":144.1},{"t":382,"d":1000,"hr":140.0},{"t":281,"d":1000,"hr":142.3},{"t":134,"d":493,"hr":156.0}]},{"id":"18925466835","name":"Ochtendrit","sport":"Ride","date":"2026-06-15","time":"08:00","dist_m":4967.3,"moving_s":1025,"elev_m":7.5,"avg_ms":4.846,"max_ms":9.7,"effort":3,"kcal":184,"cadence":null},{"id":"18931195296","name":"Namiddagrit","sport":"Ride","date":"2026-06-15","time":"17:35","dist_m":4038.2,"moving_s":1148,"elev_m":2.4,"avg_ms":3.518,"max_ms":9.183,"effort":2,"kcal":118,"cadence":null},{"id":"18968279178","name":"Pre work Z2/3/4","sport":"Run","date":"2026-06-18","time":"08:17","dist_m":8993.1,"moving_s":2593,"elev_m":9.8,"avg_ms":3.468,"max_ms":5,"effort":41,"kcal":578,"cadence":90.4985,"hr":153.4,"hrmax":171,"laps":[{"t":320,"d":1000,"hr":137.2},{"t":284,"d":1000,"hr":138.8},{"t":281,"d":1000,"hr":147.6},{"t":289,"d":1000,"hr":149.8},{"t":282,"d":1000,"hr":156.2},{"t":285,"d":1000,"hr":160.3},{"t":288,"d":1000,"hr":160.7},{"t":286,"d":1000,"hr":164.2},{"t":288,"d":993,"hr":166.7}]},{"id":"18997295530","name":"Hete gebroken 1600m’s","sport":"Run","date":"2026-06-20","time":"14:53","dist_m":9431.8,"moving_s":2870,"elev_m":11.7,"avg_ms":3.286,"max_ms":4.64,"effort":49,"kcal":621,"cadence":88.9318,"desc":"1600m warm up\n4x 1200m 4:09, 400m herstel\nCool down\n\nLaatste herhaling maar wat langer herstel ivm hitte.","hr":155.8,"hrmax":181,"laps":[{"t":315,"d":1000,"hr":133.1},{"t":176,"d":600,"hr":140.0},{"t":242,"d":1000,"hr":165.5},{"t":48,"d":200,"hr":171.4},{"t":134,"d":400,"hr":154.7},{"t":249,"d":1000,"hr":166.5},{"t":49,"d":200,"hr":173.8},{"t":138,"d":400,"hr":156.6},{"t":249,"d":1000,"hr":171.3},{"t":50,"d":200,"hr":179.4},{"t":185,"d":400,"hr":146.2},{"t":253,"d":1000,"hr":174.0},{"t":50,"d":200,"hr":175.5},{"t":224,"d":400,"hr":141.5},{"t":348,"d":1000,"hr":151.1},{"t":156,"d":432,"hr":151.6}]},{"id":"19008577713","name":"Z2 achtig. Heel easy en niet te ver want warm en benauwd","sport":"Run","date":"2026-06-21","time":"11:35","dist_m":15480.1,"moving_s":4843,"elev_m":10.6,"avg_ms":3.196,"max_ms":4.36,"effort":51,"kcal":1002,"cadence":87.9007,"desc":"3kg lichter","hr":148.7,"hrmax":162,"laps":[{"t":316,"d":1000,"hr":133.4},{"t":293,"d":1000,"hr":141.6},{"t":297,"d":1000,"hr":144.6},{"t":295,"d":1000,"hr":149.4},{"t":300,"d":1000,"hr":150.1},{"t":306,"d":1000,"hr":150.7},{"t":304,"d":1000,"hr":152.7},{"t":314,"d":1000,"hr":152.4},{"t":323,"d":1000,"hr":151.6},{"t":317,"d":1000,"hr":151.0},{"t":324,"d":1000,"hr":150.1},{"t":323,"d":1000,"hr":150.8},{"t":323,"d":1000,"hr":149.4},{"t":322,"d":1000,"hr":150.8},{"t":323,"d":1000,"hr":149.0},{"t":159,"d":480,"hr":151.4}]},{"id":"19018214885","name":"Ochtendrit","sport":"Ride","date":"2026-06-22","time":"07:47","dist_m":4555.3,"moving_s":911,"elev_m":6.1,"avg_ms":5,"max_ms":8.56,"effort":2,"kcal":124,"cadence":null},{"id":"19023382142","name":"Namiddagrit","sport":"Ride","date":"2026-06-22","time":"17:03","dist_m":4873,"moving_s":949,"elev_m":2.3,"avg_ms":5.135,"max_ms":8.113,"effort":2,"kcal":117,"cadence":null},{"id":"19031306640","name":"Ochtendrit","sport":"Ride","date":"2026-06-23","time":"07:45","dist_m":4943.5,"moving_s":1001,"elev_m":7.6,"avg_ms":4.939,"max_ms":8.96,"effort":3,"kcal":127,"cadence":null},{"id":"19037711793","name":"Namiddagrit","sport":"Ride","date":"2026-06-23","time":"17:34","dist_m":4933.4,"moving_s":1104,"elev_m":2.3,"avg_ms":4.469,"max_ms":7.938,"effort":2,"kcal":127,"cadence":null},{"id":"19052813441","name":"Easy easy met 1 stride van 500m","sport":"Run","date":"2026-06-24","time":"20:03","dist_m":7775.7,"moving_s":2354,"elev_m":16.2,"avg_ms":3.303,"max_ms":4.58,"effort":20,"kcal":501,"cadence":89.2186,"desc":"Hitteweerstand bouwen","hr":147.4,"hrmax":174,"laps":[{"t":321,"d":1000,"hr":139.3},{"t":296,"d":1000,"hr":142.9},{"t":291,"d":1000,"hr":146.4},{"t":303,"d":1000,"hr":145.1},{"t":327,"d":1000,"hr":146.2},{"t":302,"d":1000,"hr":149.2},{"t":144,"d":488,"hr":152.5},{"t":112,"d":449,"hr":167.3},{"t":280,"d":839,"hr":153.2}]},{"id":"19083777024","name":"3x10’  <AnT","sport":"Run","date":"2026-06-27","time":"11:19","dist_m":11684.8,"moving_s":3618,"elev_m":10.1,"avg_ms":3.23,"max_ms":4.54,"effort":69,"kcal":788,"cadence":88.7453,"desc":"Mijn God wat een benauwd weer. Niet vooruit te branden 🥵","hr":158.0,"hrmax":183,"laps":[{"t":371,"d":1000,"hr":137.0},{"t":312,"d":1000,"hr":136.7},{"t":307,"d":1000,"hr":144.9},{"t":77,"d":251,"hr":147.1},{"t":268,"d":1000,"hr":160.2},{"t":266,"d":1000,"hr":166.3},{"t":65,"d":241,"hr":161.1},{"t":179,"d":466,"hr":151.7},{"t":280,"d":1000,"hr":167.1},{"t":270,"d":1000,"hr":176.5},{"t":49,"d":170,"hr":180.6},{"t":179,"d":245,"hr":145.6},{"t":281,"d":1000,"hr":172.2},{"t":280,"d":1000,"hr":176.9},{"t":38,"d":134,"hr":177.1},{"t":50,"d":66,"hr":168.4},{"t":351,"d":1000,"hr":156.1},{"t":35,"d":112,"hr":157.1}]},{"id":"19101271663","name":"Z2 familieweekend shake out","sport":"Run","date":"2026-06-28","time":"18:16","dist_m":9430.7,"moving_s":2840,"elev_m":11.7,"avg_ms":3.321,"max_ms":4.24,"effort":20,"kcal":590,"cadence":89.9245,"hr":145.4,"hrmax":171,"laps":[{"t":311,"d":1000,"hr":150.2},{"t":287,"d":1000,"hr":137.6},{"t":287,"d":1000,"hr":143.1},{"t":290,"d":1000,"hr":142.7},{"t":292,"d":1000,"hr":144.2},{"t":294,"d":1000,"hr":146.8},{"t":313,"d":1000,"hr":148.5},{"t":311,"d":1000,"hr":149.2},{"t":320,"d":1000,"hr":146.8},{"t":130,"d":431,"hr":142.3}]},{"id":"19121729169","name":"Morning Ride","sport":"Ride","date":"2026-06-30","time":"07:45","dist_m":4974.4,"moving_s":1028,"elev_m":7.8,"avg_ms":4.839,"max_ms":10,"effort":3,"kcal":142,"cadence":null},{"id":"19125433388","name":"Namiddagrit","sport":"Ride","date":"2026-06-30","time":"17:32","dist_m":5017.6,"moving_s":1175,"elev_m":2.3,"avg_ms":4.27,"max_ms":9.25,"effort":2,"kcal":117,"cadence":null},{"id":"19153097220","name":"Inlopen Polderloop","sport":"Run","date":"2026-07-02","time":"18:57","dist_m":2515.5,"moving_s":762,"elev_m":0,"avg_ms":3.301,"max_ms":5.3,"effort":5,"kcal":161,"cadence":88.0808,"hr":144.8,"hrmax":164,"laps":[{"t":306,"d":1000,"hr":136.6},{"t":311,"d":1000,"hr":149.2},{"t":153,"d":515,"hr":151.6}]},{"id":"19153958075","name":"VU Polderloop 10km (17e/66)","sport":"Run","date":"2026-07-02","time":"19:30","dist_m":9907.5,"moving_s":2493,"elev_m":6.8,"avg_ms":3.971,"max_ms":4.96,"effort":115,"kcal":649,"cadence":92.6581,"desc":"Zou 10k moeten zijn, maar lijkt wat minder. Hoe dan ook: PR op deze loop verpletterd met dik een minuut 💪💪💪","hr":179.7,"hrmax":193,"laps":[{"t":242,"d":1000,"hr":177.3},{"t":242,"d":1000,"hr":174.9},{"t":244,"d":1000,"hr":177.0},{"t":246,"d":1000,"hr":181.2},{"t":248,"d":1000,"hr":183.3},{"t":255,"d":1000,"hr":182.3},{"t":254,"d":1000,"hr":182.4},{"t":258,"d":1000,"hr":180.1},{"t":265,"d":1000,"hr":179.7},{"t":238,"d":907,"hr":178.2}]},{"id":"19159362441","name":"Ochtendrit","sport":"Ride","date":"2026-07-03","time":"08:00","dist_m":4980.3,"moving_s":973,"elev_m":18,"avg_ms":5.118,"max_ms":8,"effort":2,"kcal":146,"cadence":null},{"id":"19165008627","name":"Namiddagrit","sport":"Ride","date":"2026-07-03","time":"17:30","dist_m":4931.2,"moving_s":873,"elev_m":9,"avg_ms":5.649,"max_ms":9.45,"effort":2,"kcal":113,"cadence":null},{"id":"19177649062","name":"Z2 loopje","sport":"Run","date":"2026-07-04","time":"15:46","dist_m":11604.3,"moving_s":3449,"elev_m":30,"avg_ms":3.365,"max_ms":5.04,"effort":19,"kcal":699,"cadence":87.9327,"hr":142.3,"hrmax":153,"laps":[{"t":312,"d":1000,"hr":132.1},{"t":287,"d":1000,"hr":137.1},{"t":285,"d":1000,"hr":144.0},{"t":289,"d":1000,"hr":143.1},{"t":289,"d":1000,"hr":144.6},{"t":297,"d":1000,"hr":144.7},{"t":486,"d":1000,"hr":139.9},{"t":311,"d":1000,"hr":139.4},{"t":303,"d":1000,"hr":142.9},{"t":292,"d":1000,"hr":148.0},{"t":291,"d":1000,"hr":149.1},{"t":187,"d":604,"hr":144.7}]},{"id":"19188696835","name":"Easy zondag Z2","sport":"Run","date":"2026-07-05","time":"13:05","dist_m":14551.6,"moving_s":4398,"elev_m":42,"avg_ms":3.309,"max_ms":5.22,"effort":38,"kcal":904,"cadence":89.1717,"hr":146.4,"hrmax":162,"laps":[{"t":382,"d":1000,"hr":136.2},{"t":301,"d":1000,"hr":148.8},{"t":294,"d":1000,"hr":139.1},{"t":297,"d":1000,"hr":141.0},{"t":298,"d":1000,"hr":142.4},{"t":299,"d":1000,"hr":143.7},{"t":297,"d":1000,"hr":147.2},{"t":298,"d":1000,"hr":149.1},{"t":305,"d":1000,"hr":150.6},{"t":302,"d":1000,"hr":150.0},{"t":300,"d":1000,"hr":148.8},{"t":309,"d":1000,"hr":150.7},{"t":297,"d":1000,"hr":149.6},{"t":298,"d":1000,"hr":149.9},{"t":168,"d":553,"hr":150.1}]},{"id":"19197207223","name":"Ochtendrit","sport":"Ride","date":"2026-07-06","time":"08:01","dist_m":4947.7,"moving_s":959,"elev_m":12,"avg_ms":5.159,"max_ms":8.933,"effort":2,"kcal":135,"cadence":null},{"id":"19202358474","name":"Namiddagrit","sport":"Ride","date":"2026-07-06","time":"17:00","dist_m":5227.7,"moving_s":1272,"elev_m":17,"avg_ms":4.11,"max_ms":9.2,"effort":2,"kcal":130,"cadence":null},{"id":"19210089722","name":"Ochtendrit","sport":"Ride","date":"2026-07-07","time":"07:46","dist_m":4922.3,"moving_s":920,"elev_m":12,"avg_ms":5.35,"max_ms":9.533,"effort":3,"kcal":144,"cadence":null},{"id":"19232711122","name":"Z2 loopje","sport":"Run","date":"2026-07-08","time":"19:57","dist_m":7819.8,"moving_s":2276,"elev_m":15,"avg_ms":3.436,"max_ms":4.3,"effort":14,"kcal":476,"cadence":91.0022,"desc":"Ondanks een heel korte nacht en algemene moeheid heerlijk gelopen 🤩","hr":142.9,"hrmax":163,"laps":[{"t":297,"d":1000,"hr":134.8},{"t":287,"d":1000,"hr":138.8},{"t":287,"d":1000,"hr":141.0},{"t":289,"d":1000,"hr":142.2},{"t":288,"d":1000,"hr":145.4},{"t":289,"d":1000,"hr":146.1},{"t":287,"d":1000,"hr":147.6},{"t":249,"d":820,"hr":148.5}]},{"id":"19269186383","name":"Zaterdag VO2 Max intervals","sport":"Run","date":"2026-07-11","time":"14:21","dist_m":12670.5,"moving_s":3964,"elev_m":24,"avg_ms":3.196,"max_ms":5.84,"effort":56,"kcal":850,"cadence":85.0895,"desc":"12x 400m @3:55\n10x 200m @3:40","hr":151.6,"hrmax":177,"laps":[{"t":329,"d":1000,"hr":134.5},{"t":300,"d":1000,"hr":130.5},{"t":298,"d":1000,"hr":140.1},{"t":89,"d":225,"hr":128.2},{"t":90,"d":400,"hr":151.1},{"t":59,"d":102,"hr":150.7},{"t":89,"d":400,"hr":151.2},{"t":59,"d":96,"hr":150.9},{"t":91,"d":400,"hr":153.5},{"t":59,"d":103,"hr":155.4},{"t":92,"d":400,"hr":155.8},{"t":59,"d":97,"hr":155.3},{"t":91,"d":400,"hr":155.1},{"t":59,"d":98,"hr":155.7},{"t":92,"d":400,"hr":154.9},{"t":59,"d":95,"hr":152.8},{"t":91,"d":400,"hr":155.5},{"t":59,"d":103,"hr":156.2},{"t":92,"d":400,"hr":158.4},{"t":59,"d":97,"hr":158.7},{"t":92,"d":400,"hr":160.0},{"t":59,"d":105,"hr":162.7},{"t":93,"d":400,"hr":163.7},{"t":59,"d":100,"hr":159.7},{"t":94,"d":400,"hr":162.7},{"t":59,"d":98,"hr":161.8},{"t":93,"d":400,"hr":161.5},{"t":59,"d":98,"hr":162.3},{"t":42,"d":200,"hr":156.5},{"t":49,"d":83,"hr":163.5},{"t":42,"d":200,"hr":158.1},{"t":49,"d":83,"hr":165.4},{"t":42,"d":200,"hr":158.1},{"t":49,"d":86,"hr":164.0},{"t":42,"d":200,"hr":158.6},{"t":49,"d":91,"hr":168.2},{"t":43,"d":200,"hr":161.3},{"t":49,"d":83,"hr":168.2},{"t":44,"d":200,"hr":159.6},{"t":49,"d":83,"hr":165.3},{"t":45,"d":200,"hr":155.0},{"t":49,"d":82,"hr":164.7},{"t":45,"d":200,"hr":158.6},{"t":49,"d":80,"hr":164.4},{"t":43,"d":200,"hr":156.9},{"t":49,"d":88,"hr":165.6},{"t":42,"d":200,"hr":158.8},{"t":49,"d":80,"hr":166.4},{"t":214,"d":613,"hr":144.9}]},{"id":"19282677027","name":"Z2 easy long run","sport":"Run","date":"2026-07-12","time":"14:19","dist_m":18659.9,"moving_s":5742,"elev_m":37,"avg_ms":3.25,"max_ms":4.4,"effort":41,"kcal":1171,"cadence":87.7664,"desc":"Lekker rustig ivm warm weer maar niet te heet en een lekker briesje","hr":145.1,"hrmax":163,"laps":[{"t":319,"d":1000,"hr":131.0},{"t":296,"d":1000,"hr":135.7},{"t":296,"d":1000,"hr":138.9},{"t":302,"d":1000,"hr":142.4},{"t":301,"d":1000,"hr":142.1},{"t":306,"d":1000,"hr":143.1},{"t":305,"d":1000,"hr":143.5},{"t":309,"d":1000,"hr":145.8},{"t":309,"d":1000,"hr":144.5},{"t":311,"d":1000,"hr":147.4},{"t":304,"d":1000,"hr":147.1},{"t":306,"d":1000,"hr":147.3},{"t":310,"d":1000,"hr":149.7},{"t":315,"d":1000,"hr":149.1},{"t":307,"d":1000,"hr":150.1},{"t":314,"d":1000,"hr":150.2},{"t":316,"d":1000,"hr":149.4},{"t":308,"d":1000,"hr":151.5},{"t":207,"d":660,"hr":148.1}]},{"id":"19290460813","name":"Ochtendrit","sport":"Ride","date":"2026-07-13","time":"08:01","dist_m":5001.3,"moving_s":924,"elev_m":10,"avg_ms":5.413,"max_ms":9.02,"effort":2,"kcal":133,"cadence":null},{"id":"19296147047","name":"Namiddagrit","sport":"Ride","date":"2026-07-13","time":"17:17","dist_m":4849.8,"moving_s":955,"elev_m":9,"avg_ms":5.078,"max_ms":8.511,"effort":2,"kcal":114,"cadence":null},{"id":"19312654448","name":"Morning Ride","sport":"Ride","date":"2026-07-14","time":"07:46","dist_m":4959.7,"moving_s":974,"elev_m":16,"avg_ms":5.092,"max_ms":8.988,"effort":2,"kcal":120,"cadence":null},{"id":"19313917688","name":"New shoes! Even testen","sport":"Run","date":"2026-07-14","time":"20:41","dist_m":7198.4,"moving_s":2166,"elev_m":16,"avg_ms":3.323,"max_ms":4.08,"effort":13,"kcal":455,"cadence":88.2743,"desc":"Z2 loopje met nieuwe Nike Vomero Plus","hr":144.6,"hrmax":157,"laps":[{"t":331,"d":1000,"hr":141.1},{"t":295,"d":1000,"hr":141.0},{"t":299,"d":1000,"hr":146.5},{"t":301,"d":1000,"hr":143.3},{"t":300,"d":1000,"hr":144.0},{"t":297,"d":1000,"hr":147.0},{"t":290,"d":1000,"hr":149.1},{"t":65,"d":198,"hr":145.1}]},{"id":"19346018057","name":"Progressief pre-werk pre-vakantie","sport":"Run","date":"2026-07-17","time":"07:55","dist_m":11343.3,"moving_s":3355,"elev_m":15,"avg_ms":3.381,"max_ms":4.22,"effort":48,"kcal":731,"cadence":90.1516,"hr":151.2,"hrmax":170,"laps":[{"t":339,"d":1000,"hr":136.9},{"t":312,"d":1000,"hr":140.5},{"t":303,"d":1000,"hr":138.7},{"t":308,"d":1000,"hr":139.6},{"t":275,"d":1000,"hr":154.4},{"t":276,"d":1000,"hr":158.2},{"t":267,"d":1000,"hr":158.0},{"t":282,"d":1000,"hr":164.1},{"t":269,"d":1000,"hr":157.6},{"t":266,"d":1000,"hr":157.9},{"t":343,"d":1000,"hr":159.2},{"t":109,"d":345,"hr":160.8}]},{"id":"19348093110","name":"Middagrit","sport":"Ride","date":"2026-07-17","time":"12:14","dist_m":4987.9,"moving_s":1059,"elev_m":16,"avg_ms":4.71,"max_ms":9.217,"effort":4,"kcal":205,"cadence":null},{"id":"19351371789","name":"Namiddagrit","sport":"Ride","date":"2026-07-17","time":"17:14","dist_m":4944.2,"moving_s":1032,"elev_m":12,"avg_ms":4.791,"max_ms":12.913,"effort":2,"kcal":123,"cadence":null},{"id":"19414781456","name":"Inkomen in de warmte en hoogtemeters","sport":"Run","date":"2026-07-22","time":"10:43","dist_m":9994.1,"moving_s":3138,"elev_m":120,"avg_ms":3.185,"max_ms":3.88,"effort":49,"kcal":677,"cadence":88.4657,"hr":152.7,"hrmax":171,"laps":[{"t":330,"d":1000,"hr":136.0},{"t":325,"d":1000,"hr":140.1},{"t":316,"d":1000,"hr":151.8},{"t":310,"d":1000,"hr":156.1},{"t":321,"d":1000,"hr":160.7},{"t":314,"d":1000,"hr":151.6},{"t":306,"d":1000,"hr":154.2},{"t":307,"d":1000,"hr":157.0},{"t":303,"d":1000,"hr":159.3},{"t":310,"d":996,"hr":161.9}]},{"id":"19430386001","name":"Route touristique du Verdon","sport":"Ride","date":"2026-07-23","time":"10:47","dist_m":56641.1,"moving_s":8570,"elev_m":793,"avg_ms":6.609,"max_ms":13.36,"effort":69,"kcal":1922,"cadence":87.7401,"desc":"Mooi en warm. Inclusief een klassiek Strava-route moment: ondergrond “onbekend” = recht omhoog nauwelijks zichtbare gravel/single track. Omfietsen dan maar."},{"id":"19443175005","name":"De helft berg op, de helft berg af","sport":"Run","date":"2026-07-24","time":"11:23","dist_m":8080.8,"moving_s":2648,"elev_m":189,"avg_ms":3.052,"max_ms":3.96,"effort":30,"kcal":543,"cadence":87.6252,"hr":148.3,"hrmax":168,"laps":[{"t":326,"d":1000,"hr":129.7},{"t":361,"d":1000,"hr":149.3},{"t":374,"d":1000,"hr":158.7},{"t":316,"d":1000,"hr":157.5},{"t":304,"d":1000,"hr":152.4},{"t":296,"d":1000,"hr":138.5},{"t":294,"d":1000,"hr":145.4},{"t":344,"d":1000,"hr":153.0},{"t":74,"d":81,"hr":149.1}]},{"id":"19510764610","name":"Voor de hitte uit","sport":"Run","date":"2026-07-29","time":"08:02","dist_m":10114,"moving_s":2952,"elev_m":12,"avg_ms":3.426,"max_ms":4.2,"effort":34,"kcal":631,"cadence":88.3059,"hr":147.5,"hrmax":168,"laps":[{"t":326,"d":1000,"hr":127.9},{"t":286,"d":1000,"hr":131.3},{"t":288,"d":1000,"hr":138.0},{"t":283,"d":1000,"hr":143.0},{"t":285,"d":1000,"hr":149.7},{"t":295,"d":1000,"hr":149.7},{"t":291,"d":1000,"hr":154.2},{"t":290,"d":1000,"hr":157.3},{"t":287,"d":1000,"hr":162.9},{"t":293,"d":1000,"hr":160.8},{"t":31,"d":114,"hr":164.8}]},{"id":"19531441270","name":"Rondje Trassimeno, 🥵🥵🥵","sport":"Ride","date":"2026-07-30","time":"16:28","dist_m":58488,"moving_s":7609,"elev_m":183,"avg_ms":7.687,"max_ms":15.08,"effort":76,"kcal":1800,"cadence":89.2117},{"id":"19570589212","name":"Heuveltraining in Aosta dal","sport":"Run","date":"2026-08-02","time":"15:06","dist_m":9404.6,"moving_s":3008,"elev_m":218,"avg_ms":3.127,"max_ms":3.98,"effort":24,"kcal":597,"cadence":86.9168,"desc":"Bergop rennen wordt nooit mijn favoriete hobby","hr":143.4,"hrmax":165,"laps":[{"t":350,"d":1000,"hr":138.1},{"t":358,"d":1000,"hr":144.5},{"t":385,"d":1000,"hr":152.7},{"t":331,"d":1000,"hr":147.4},{"t":379,"d":1000,"hr":140.0},{"t":274,"d":1000,"hr":138.4},{"t":290,"d":1000,"hr":144.0},{"t":288,"d":1000,"hr":146.5},{"t":281,"d":1000,"hr":134.0},{"t":125,"d":405,"hr":148.0}]},{"id":"19593811760","name":"Grote Sint-Bernhardpas","sport":"Ride","date":"2026-08-04","time":"07:07","dist_m":62155.3,"moving_s":11750,"elev_m":1801,"avg_ms":5.29,"max_ms":21.3,"effort":157,"kcal":2849,"cadence":76.9566,"desc":"Supermooi, lekker koel in de ochtend."},{"id":"19597841807","name":"Gezellig met gezin","sport":"Walk","date":"2026-08-04","time":"14:17","dist_m":6028,"moving_s":5199,"elev_m":337,"avg_ms":1.159,"max_ms":2.48,"effort":12,"kcal":491,"cadence":53.696},{"id":"19655955862","name":"Intervallen 1km naar gebroken km","sport":"Run","date":"2026-08-08","time":"15:40","dist_m":14118.7,"moving_s":4416,"elev_m":22,"avg_ms":3.197,"max_ms":5.3,"effort":71,"kcal":911,"cadence":83.3361,"desc":"3k warm up\n4x: 1km @4:10 en 5x 200m @3:40 (herstel tussendoor)\n1km cool down","hr":152.4,"hrmax":186,"laps":[{"t":301,"d":1000,"hr":135.3},{"t":290,"d":1000,"hr":134.4},{"t":196,"d":650,"hr":136.5},{"t":90,"d":143,"hr":111.4},{"t":243,"d":1000,"hr":155.4},{"t":59,"d":109,"hr":147.3},{"t":40,"d":200,"hr":127.7},{"t":29,"d":54,"hr":152.1},{"t":43,"d":200,"hr":147.7},{"t":29,"d":63,"hr":159.8},{"t":42,"d":200,"hr":156.7},{"t":29,"d":58,"hr":160.8},{"t":43,"d":200,"hr":156.2},{"t":29,"d":56,"hr":163.5},{"t":43,"d":200,"hr":163.6},{"t":29,"d":52,"hr":168.4},{"t":120,"d":180,"hr":122.5},{"t":245,"d":1000,"hr":158.4},{"t":59,"d":102,"hr":154.2},{"t":42,"d":200,"hr":142.4},{"t":38,"d":92,"hr":154.5},{"t":44,"d":200,"hr":158.2},{"t":29,"d":55,"hr":166.4},{"t":44,"d":200,"hr":162.2},{"t":29,"d":56,"hr":167.6},{"t":43,"d":200,"hr":166.3},{"t":29,"d":59,"hr":171.6},{"t":43,"d":200,"hr":171.7},{"t":29,"d":50,"hr":169.3},{"t":120,"d":185,"hr":129.5},{"t":242,"d":1000,"hr":167.4},{"t":59,"d":95,"hr":158.2},{"t":43,"d":200,"hr":149.5},{"t":29,"d":57,"hr":166.3},{"t":44,"d":200,"hr":168.3},{"t":29,"d":54,"hr":171.0},{"t":44,"d":200,"hr":167.3},{"t":29,"d":58,"hr":170.6},{"t":44,"d":200,"hr":165.6},{"t":29,"d":55,"hr":171.7},{"t":43,"d":200,"hr":171.8},{"t":29,"d":53,"hr":174.2},{"t":120,"d":175,"hr":133.9},{"t":241,"d":1000,"hr":174.5},{"t":59,"d":99,"hr":165.3},{"t":46,"d":200,"hr":152.0},{"t":29,"d":49,"hr":167.7},{"t":44,"d":200,"hr":169.5},{"t":29,"d":53,"hr":172.0},{"t":45,"d":200,"hr":166.8},{"t":29,"d":60,"hr":175.3},{"t":45,"d":200,"hr":176.2},{"t":29,"d":48,"hr":178.3},{"t":43,"d":200,"hr":171.6},{"t":29,"d":50,"hr":174.0},{"t":120,"d":139,"hr":137.6},{"t":327,"d":1000,"hr":149.2},{"t":37,"d":109,"hr":146.9}]},{"id":"19669441005","name":"Rustig Z2","sport":"Run","date":"2026-08-09","time":"15:05","dist_m":14558.6,"moving_s":4603,"elev_m":24,"avg_ms":3.163,"max_ms":5.64,"effort":35,"kcal":936,"cadence":87.2347,"desc":"Toch nog wel stijf van gisteren","hr":145.5,"hrmax":164,"laps":[{"t":321,"d":1000,"hr":137.5},{"t":299,"d":1000,"hr":132.8},{"t":295,"d":1000,"hr":139.6},{"t":299,"d":1000,"hr":142.0},{"t":301,"d":1000,"hr":144.6},{"t":307,"d":1000,"hr":146.1},{"t":322,"d":1000,"hr":147.9},{"t":321,"d":1000,"hr":148.2},{"t":319,"d":1000,"hr":148.6},{"t":324,"d":1000,"hr":147.9},{"t":325,"d":1000,"hr":151.4},{"t":328,"d":1000,"hr":148.4},{"t":317,"d":1000,"hr":146.8},{"t":319,"d":1000,"hr":153.7},{"t":207,"d":559,"hr":145.8}]},{"id":"19676931588","name":"Ochtendrit","sport":"Ride","date":"2026-08-10","time":"08:01","dist_m":4964.8,"moving_s":976,"elev_m":10,"avg_ms":5.087,"max_ms":8.58,"effort":2,"kcal":150,"cadence":null},{"id":"19682696081","name":"Afternoon Ride","sport":"Ride","date":"2026-08-10","time":"17:04","dist_m":5145.6,"moving_s":1288,"elev_m":13,"avg_ms":3.995,"max_ms":9.66,"effort":3,"kcal":148,"cadence":null},{"id":"19690909578","name":"Ochtendrit","sport":"Ride","date":"2026-08-11","time":"07:45","dist_m":5007.5,"moving_s":961,"elev_m":18,"avg_ms":5.211,"max_ms":8.771,"effort":2,"kcal":129,"cadence":null},{"id":"19697768168","name":"Afternoon Ride","sport":"Ride","date":"2026-08-11","time":"17:17","dist_m":5106.2,"moving_s":1291,"elev_m":12,"avg_ms":3.955,"max_ms":9.217,"effort":2,"kcal":114,"cadence":null},{"id":"19706278001","name":"Morning Ride","sport":"Ride","date":"2026-08-12","time":"07:47","dist_m":4912.9,"moving_s":938,"elev_m":12,"avg_ms":5.238,"max_ms":8.557,"effort":3,"kcal":135,"cadence":null},{"id":"19712705007","name":"Namiddagrit","sport":"Ride","date":"2026-08-12","time":"17:03","dist_m":4894.8,"moving_s":968,"elev_m":9,"avg_ms":5.057,"max_ms":8.557,"effort":1,"kcal":101,"cadence":null},{"id":"19713374407","name":"Z2 duurloop plus 6x 20s strides","sport":"Run","date":"2026-08-12","time":"17:35","dist_m":9451.5,"moving_s":2852,"elev_m":31,"avg_ms":3.314,"max_ms":4.9,"effort":25,"kcal":611,"cadence":87.6303,"hr":146.8,"hrmax":170,"laps":[{"t":249,"d":788,"hr":133.3},{"t":294,"d":1000,"hr":139.2},{"t":296,"d":1000,"hr":141.6},{"t":299,"d":1000,"hr":145.7},{"t":303,"d":1000,"hr":146.4},{"t":297,"d":1000,"hr":148.1},{"t":293,"d":1000,"hr":149.4},{"t":264,"d":898,"hr":151.8},{"t":20,"d":87,"hr":153.5},{"t":33,"d":96,"hr":160.5},{"t":20,"d":86,"hr":159.5},{"t":14,"d":41,"hr":160.5},{"t":20,"d":92,"hr":161.3},{"t":16,"d":50,"hr":168.2},{"t":20,"d":88,"hr":165.8},{"t":32,"d":92,"hr":162.3},{"t":20,"d":87,"hr":157.9},{"t":29,"d":80,"hr":164.1},{"t":20,"d":87,"hr":160.3},{"t":2,"d":12,"hr":167.0},{"t":302,"d":867,"hr":151.7}]}]}</script>
+<script>
+"use strict";
+const DATA = JSON.parse(document.getElementById('seed').textContent);
+const LS = {
+  get(k,d){ try{ const v=localStorage.getItem('koers.'+k); return v==null?d:JSON.parse(v);}catch(e){return d;} },
+  set(k,v){ try{ localStorage.setItem('koers.'+k, JSON.stringify(v)); }catch(e){} },
+  del(k){ try{ localStorage.removeItem('koers.'+k);}catch(e){} }
+};
+
+/* ---------- helpers ---------- */
+const TODAY = new Date();
+const iso = d => new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const TODAY_ISO = iso(TODAY);
+const DAYS=['zo','ma','di','wo','do','vr','za'];
+const MONTHS=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+const parse = s => { const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); };
+const fmtDate = s => { const d=parse(s); return DAYS[d.getDay()]+' '+d.getDate()+' '+MONTHS[d.getMonth()]; };
+const dayDiff = (a,b) => Math.round((parse(a)-parse(b))/864e5);
+const pace = (m,s) => { if(!m||!s) return '–'; const p=s/(m/1000); return Math.floor(p/60)+':'+String(Math.round(p%60)).padStart(2,'0'); };
+const paceSec = (m,s) => (!m||!s)?null:s/(m/1000);
+const hms = s => { s=Math.round(s); const h=Math.floor(s/3600), m=Math.floor(s%3600/60);
+  return h? h+':'+String(m).padStart(2,'0')+':'+String(s%60).padStart(2,'0') : m+':'+String(s%60).padStart(2,'0'); };
+const km = m => (m/1000).toFixed(1).replace('.',',');
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function allActs(){
+  const extra = LS.get('live', []);
+  const byId = new Map();
+  DATA.activities.forEach(a=>byId.set(a.id,a));
+  extra.forEach(a=>byId.set(a.id,Object.assign({},byId.get(a.id)||{},a)));
+  return [...byId.values()].sort((a,b)=> a.date<b.date?1:a.date>b.date?-1:0);
+}
+const runsOf = as => as.filter(a=>a.sport==='Run');
+
+/* ---------- belasting / ACWR ---------- */
+function load(as, ref){
+  const end = ref||TODAY_ISO;
+  const sum = n => as.filter(a=>{const d=dayDiff(end,a.date); return d>=0 && d<n;})
+                    .reduce((s,a)=> s+(a.effort||0), 0);
+  const acute = sum(7), chronic28 = sum(28)/4;
+  return { acute, chronic: chronic28, acwr: chronic28>0 ? acute/chronic28 : null };
+}
+function acwrVerdict(r){
+  if(r==null) return {cls:'neutral',label:'geen basis',txt:'Nog te weinig historie om een verhouding te berekenen.'};
+  if(r<0.8)  return {cls:'warn',label:'onderbelast',txt:'Je week ligt duidelijk onder je eigen basis. In een opbouwblok is dat verlies.'};
+  if(r<=1.3) return {cls:'good',label:'in balans',txt:'Acute belasting past bij je basis. Dit is de zone waarin opbouwen veilig gaat.'};
+  if(r<=1.5) return {cls:'warn',label:'aan de hoge kant',txt:'Je bouwt sneller op dan je basis meegroeit. Houd de zaterdagintensiteit in de gaten.'};
+  return {cls:'crit',label:'te snel opgebouwd',txt:'Dit is het patroon van begin augustus. Bij klachten: schrap de zaterdagintensiteit, niet de zondagse duurloop.'};
+}
+
+/* ---------- schema-matching ---------- */
+function planWithActual(){
+  const rs = runsOf(allActs());
+  return DATA.plan.map(p=>{
+    const act = rs.find(a=>a.date===p.date);
+    return Object.assign({}, p, {act, status: act?'done':(p.date<TODAY_ISO?'missed':(p.date===TODAY_ISO?'today':'todo'))});
+  });
+}
+function weekAgg(){
+  const rs = runsOf(allActs());
+  return DATA.weeks.map(w=>{
+    const inw = rs.filter(a=>a.date>=w.from && a.date<=w.to);
+    return {w, done: inw.reduce((s,a)=>s+a.dist_m,0)/1000, n:inw.length, acts:inw};
+  });
+}
+function currentWeek(){ return DATA.weeks.find(w=>TODAY_ISO>=w.from && TODAY_ISO<=w.to) || DATA.weeks[0]; }
+
+/* drift: eerste vs laatste hele km-lap bij rustige duurloop.
+   Alleen zinnig op een gelijkmatige rustige loop — intervallen en heuvels eruit. */
+function isEasy(a){ return a.sport==='Run' && a.dist_m>7000 && a.hr && a.hr<=157 && (a.elev_m||0) < 80; }
+function drift(a){
+  if(!a.laps || !isEasy(a)) return null;
+  const L = a.laps.filter(l=>l.d>=850 && l.hr);
+  if(L.length<4) return null;
+  return { d: Math.round(L[L.length-1].hr - L[0].hr), first: Math.round(L[0].hr), last: Math.round(L[L.length-1].hr), n:L.length };
+}
+/* haalde hij de doelband in de kwaliteitsblokken? */
+function bandCheck(a, band){
+  if(!a || !a.laps || !band) return null;
+  const [lo,hi] = band.split('-').map(Number);
+  const L = a.laps.filter(l=>l.t>=240 && l.hr);
+  if(!L.length) return null;
+  const best = L.map(l=>Math.round(l.hr));
+  const inb = best.filter(h=>h>=lo-2 && h<=hi+2).length;
+  return {laps:best, lo, hi, hit:inb, total:best.length};
+}
+
+/* ---------- SVG chart helpers ---------- */
+function svg(w,h,inner,cls){ return `<svg class="chart ${cls||''}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet" role="img">${inner}</svg>`; }
+function barChart(rows, opt){
+  opt = opt||{};
+  const W=340, H=opt.h||150, PL=34, PR=8, PT=8, PB=22;
+  const max = opt.max || Math.max(...rows.flatMap(r=>[r.a||0,r.b||0])) * 1.1 || 1;
+  const iw = W-PL-PR, ih = H-PT-PB;
+  const bw = iw/rows.length;
+  const y = v => PT+ih - (v/max)*ih;
+  let g='';
+  const ticks = opt.ticks || 3;
+  for(let i=0;i<=ticks;i++){ const v=max*i/ticks, yy=y(v);
+    g += `<line x1="${PL}" x2="${W-PR}" y1="${yy}" y2="${yy}" stroke="var(--grid)" stroke-width="1"/>`+
+         `<text x="${PL-6}" y="${yy+3.5}" text-anchor="end" font-size="9.5" fill="var(--muted)">${Math.round(v)}</text>`; }
+  rows.forEach((r,i)=>{
+    const x0 = PL + i*bw;
+    if(opt.dual){
+      const w2 = Math.min(13,(bw-8)/2);
+      const xa = x0+bw/2-w2-1, xb=x0+bw/2+1;
+      if(r.b) g += rect(xa, y(r.b), w2, PT+ih-y(r.b), 'var(--axis)', r.tipB);
+      if(r.a) g += rect(xb, y(r.a), w2, PT+ih-y(r.a), r.color||'var(--s1)', r.tipA);
+    } else {
+      const w2 = Math.min(24, bw-8);
+      g += rect(x0+bw/2-w2/2, y(r.a), w2, PT+ih-y(r.a), r.color||'var(--s1)', r.tipA);
+    }
+    g += `<text x="${x0+bw/2}" y="${H-7}" text-anchor="middle" font-size="9.5" fill="var(--muted)">${esc(r.label)}</text>`;
+  });
+  g += `<line x1="${PL}" x2="${W-PR}" y1="${PT+ih}" y2="${PT+ih}" stroke="var(--axis)" stroke-width="1"/>`;
+  return svg(W,H,g);
+}
+function rect(x,y,w,h,fill,tip){
+  h = Math.max(h,1.5);
+  return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="4" ry="4" fill="${fill}" ${tip?`data-tip="${esc(tip)}"`:''}/>`;
+}
+function lineChart(series, opt){
+  opt=opt||{};
+  const W=340,H=opt.h||160,PL=30,PR=10,PT=10,PB=22;
+  const iw=W-PL-PR, ih=H-PT-PB;
+  const xs = series[0].pts.length;
+  const allv = series.flatMap(s=>s.pts.map(p=>p.v));
+  const lo = opt.min!=null?opt.min:Math.min(...allv), hi = opt.max!=null?opt.max:Math.max(...allv);
+  const x = i => PL + (xs<2?iw/2:(i/(xs-1))*iw);
+  const y = v => PT+ih - ((v-lo)/((hi-lo)||1))*ih;
+  let g='';
+  for(let i=0;i<=3;i++){ const v=lo+(hi-lo)*i/3, yy=y(v);
+    g+=`<line x1="${PL}" x2="${W-PR}" y1="${yy}" y2="${yy}" stroke="var(--grid)"/>`+
+       `<text x="${PL-5}" y="${yy+3.5}" text-anchor="end" font-size="9.5" fill="var(--muted)">${opt.fmtY?opt.fmtY(v):Math.round(v)}</text>`; }
+  series.forEach(s=>{
+    const d = s.pts.map((p,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(p.v).toFixed(1)).join(' ');
+    g+=`<path d="${d}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+    s.pts.forEach((p,i)=>{ g+=`<circle cx="${x(i).toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="3.6" fill="${s.color}" stroke="var(--card)" stroke-width="2" data-tip="${esc(p.tip||'')}"/>`; });
+  });
+  series[0].pts.forEach((p,i)=>{ if(p.label) g+=`<text x="${x(i)}" y="${H-6}" text-anchor="middle" font-size="9" fill="var(--muted)">${esc(p.label)}</text>`; });
+  return svg(W,H,g);
+}
+function stackBar(parts, h){
+  h=h||18; let x=0, g='';
+  const tot = parts.reduce((s,p)=>s+p.v,0)||1;
+  parts.forEach((p,i)=>{ const w=(p.v/tot)*340; if(w<=0) return;
+    g+=`<rect x="${x+ (i? 1:0)}" y="0" width="${Math.max(w-(i?1:0)-1,0.5)}" height="${h}" rx="3" fill="${p.color}" data-tip="${esc(p.tip||'')}"/>`; x+=w; });
+  return svg(340,h,g);
+}
+
+/* ---------- views ---------- */
+const V = {};
+
+V.vandaag = () => {
+  const as = allActs(), rs = runsOf(as);
+  const L = load(as);
+  const v = acwrVerdict(L.acwr);
+  const pl = planWithActual();
+  const todayP = pl.find(p=>p.date===TODAY_ISO);
+  const next = pl.find(p=>p.date>TODAY_ISO);
+  const w = currentWeek(), wa = weekAgg().find(x=>x.w.n===w.n);
+  const dtd = dayDiff(DATA.race.date, TODAY_ISO);
+  const log = LS.get('log',{})[TODAY_ISO] || {};
+  const lastRun = rs.find(a=>drift(a)) || rs[0];
+  const dr = lastRun?drift(lastRun):null;
+
+  let h = '';
+
+  /* HERSTEL bovenaan */
+  h += `<section class="card">
+    <h2>Herstel &amp; belasting</h2>
+    <div class="row" style="justify-content:space-between;align-items:flex-end">
+      <div class="hero"><span class="v num">${L.acwr?L.acwr.toFixed(2).replace('.',','):'–'}</span><span class="u">belastingverhouding</span></div>
+      <span class="pill ${v.cls}"><span class="dot"></span>${v.label}</span>
+    </div>
+    <p class="small sec" style="margin:8px 0 12px">${v.txt}</p>
+    <div class="tiles">
+      <div class="tile"><div class="k">Acuut · 7 dagen</div><div class="v num">${Math.round(L.acute)}</div><div class="n">som relatieve inspanning</div></div>
+      <div class="tile"><div class="k">Basis · 28 dagen</div><div class="v num">${Math.round(L.chronic)}</div><div class="n">weekgemiddelde</div></div>
+      <div class="tile"><div class="k">Rust-hartslag</div><div class="v num">${log.rhr||DATA.profile.rhr}</div><div class="n">${log.rhr?'vandaag ingevuld':'uit Garmin-export'}</div></div>
+      <div class="tile"><div class="k">Slaap</div><div class="v num">${log.sleep?String(log.sleep).replace('.',',')+' u':'—'}</div><div class="n">${log.sleep?'vandaag ingevuld':'tik om in te vullen'}</div></div>
+    </div>
+    <button class="btn ghost" data-sheet="log" style="margin-top:10px">Vandaag invullen</button>
+  </section>`;
+
+  /* drift-signaal */
+  if(dr){
+    const warn = dr.d>10;
+    h += `<section class="card">
+      <h2>Hartslagdrift · laatste duurloop</h2>
+      <div class="row" style="justify-content:space-between;align-items:flex-end">
+        <div class="hero"><span class="v num">${dr.d>0?'+':''}${dr.d}</span><span class="u">bpm van eerste naar laatste km</span></div>
+        <span class="pill ${warn?'warn':'good'}"><span class="dot"></span>${warn?'let op':'normaal'}</span>
+      </div>
+      <p class="small sec" style="margin:8px 0 0">${esc(lastRun.name)} · ${fmtDate(lastRun.date)} — ${dr.first} → ${dr.last} bpm over ${dr.n} km.
+      ${warn?'Boven 10 bpm is het een signaal — tenzij het warm was. Bij 18–20 °C dezelfde drift betekent vermoeidheid.':'Onder de drempel van 10 bpm.'}</p>
+    </section>`;
+  }
+
+  /* training vandaag */
+  const p = todayP;
+  h += `<section class="card">
+    <h2>${p?'Vandaag op het schema':'Vandaag geen training'}</h2>`;
+  if(p){
+    h += sessionBlock(p, true);
+  } else {
+    h += `<div class="session rest"><h3>Rustdag</h3><p class="small sec" style="margin:2px 0 0">Herstel is onderdeel van het schema. Volgende sessie: <strong>${next?fmtDate(next.date)+' — '+esc(next.title):'—'}</strong>.</p></div>`;
+  }
+  h += `</section>`;
+
+  /* week + aftellen */
+  h += `<section class="card">
+    <h2>Week ${w.n} van 6 · ${fmtDate(w.from)} t/m ${fmtDate(w.to)}</h2>
+    <div class="tiles">
+      <div class="tile"><div class="k">Gelopen deze week</div><div class="v num">${wa.done.toFixed(1).replace('.',',')} km</div><div class="n">van ${w.km} km gepland</div></div>
+      <div class="tile"><div class="k">Dam tot Dam</div><div class="v num">${dtd} ${dtd===1?'dag':'dagen'}</div><div class="n">${fmtDate(DATA.race.date)}</div></div>
+    </div>
+    ${progressBar(wa.done, w.km)}
+    <p class="small sec" style="margin:10px 0 0">Doel <strong>${DATA.race.goal}</strong> (${DATA.race.goal_pace}). Riegel vanuit je 10 km van 2 juli voorspelt ${DATA.race.riegel} — het doel ligt daar bewust boven.</p>
+  </section>`;
+
+  /* laatste activiteiten */
+  h += `<section class="card"><h2>Laatste trainingen</h2>` +
+    as.slice(0,6).map(a=>`<div class="item">
+      <div class="st">${a.sport==='Run'?'🏃':a.sport==='Ride'?'🚲':'🚶'}</div>
+      <div class="body"><div class="t">${esc(a.name)}</div>
+        <div class="d">${fmtDate(a.date)} · ${km(a.dist_m)} km · ${hms(a.moving_s)}${a.hr?' · '+Math.round(a.hr)+' bpm':''}</div></div>
+      <div class="r">${a.sport==='Run'?pace(a.dist_m,a.moving_s)+'/km':(a.dist_m/1000/(a.moving_s/3600)).toFixed(1).replace('.',',')+' km/u'}</div>
+    </div>`).join('') + `</section>`;
+
+  return h;
+};
+
+function progressBar(done, goal){
+  const pct = Math.min(done/goal,1.35);
+  const over = done>goal;
+  return `<div style="margin-top:10px;height:8px;border-radius:99px;background:var(--surface-1);border:1px solid var(--border);overflow:hidden">
+    <div style="height:100%;width:${(Math.min(pct,1)*100).toFixed(0)}%;background:${over?'var(--good)':'var(--accent)'};border-radius:99px"></div></div>`;
+}
+
+function zoneBar(band, actualHr){
+  const [lo,hi] = band.split('-').map(Number);
+  const LO=110, HI=192, span=HI-LO;
+  const pos = v => ((Math.min(Math.max(v,LO),HI)-LO)/span*100);
+  const cols=['var(--s3)','var(--s1)','var(--s4)','var(--s2)','var(--s5)'];
+  let segs = DATA.zones.map((z,i)=>{
+    const a=pos(Math.max(z.lo,LO)), b=pos(Math.min(z.hi,HI));
+    return `<div class="seg" style="left:${a}%;width:${(b-a)}%;background:${cols[i]};opacity:.30"></div>`;
+  }).join('');
+  segs += `<div class="target" style="left:${pos(lo)}%;width:${pos(hi)-pos(lo)}%"></div>`;
+  if(actualHr) segs += `<div class="mark" style="left:${pos(actualHr)}%"></div>`;
+  return `<div class="zonebar">${segs}</div>
+    <div class="zonescale tiny muted num"><span>110</span><span>145</span><span>161</span><span>180</span><span>190</span></div>`;
+}
+
+function sessionBlock(p, big){
+  const a = p.act;
+  const st = p.status;
+  const icon = st==='done'?'✓':st==='missed'?'○':st==='today'?'●':'○';
+  let h = `<div class="session${p.title.startsWith('Rust')?' rest':''}">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <span class="badge">${p.day} ${parse(p.date).getDate()} ${MONTHS[parse(p.date).getMonth()]}</span>
+      ${st==='done'?'<span class="pill good"><span class="dot"></span>gedaan</span>':
+        st==='missed'?'<span class="pill warn"><span class="dot"></span>niet gelogd</span>':
+        st==='today'?'<span class="pill neutral"><span class="dot"></span>vandaag</span>':''}
+    </div>
+    <h3 style="margin-top:6px">${esc(p.title)}</h3>
+    <p class="small sec" style="margin:2px 0 0">${esc(p.detail)}</p>`;
+  if(big!==false){
+    h += `<div class="small muted" style="margin-top:10px">Doelhartslag <strong class="num" style="color:var(--text-primary)">${p.band.replace('-','–')} bpm</strong>${a&&a.hr?` · gelopen op <strong class="num" style="color:var(--text-primary)">${Math.round(a.hr)} bpm</strong>`:''}</div>`;
+    h += zoneBar(p.band, a&&a.hr);
+  }
+  if(a){
+    h += `<div class="small sec" style="margin-top:10px">${esc(a.name)} — ${km(a.dist_m)} km · ${hms(a.moving_s)} · ${pace(a.dist_m,a.moving_s)}/km${a.hr?' · gem. '+Math.round(a.hr)+' bpm':''}</div>`;
+    const bc = bandCheck(a, p.band);
+    if(bc && p.band!=='140-150'){
+      const ok = bc.hit>=Math.ceil(bc.total/2);
+      h += `<div class="small" style="margin-top:6px;color:${ok?'var(--good-ink)':'var(--warn-ink)'}">
+        ${ok?'✓':'!'} ${bc.hit} van ${bc.total} blokken binnen ${bc.lo}–${bc.hi} bpm ${ok?'':'— te hoog betekent dat je weer richting drempel racet'}</div>`;
+    }
+  }
+  h += `</div>`;
+  return h;
+}
+
+V.schema = () => {
+  const pl = planWithActual();
+  const agg = weekAgg();
+  let h = `<section class="card">
+    <h2>Het plan in één regel</h2>
+    <p class="small sec" style="margin:0">Je racet sinds 2024 op drempeltempo vanaf kilometer 2. De conditie is er — de 10 km van 2 juli voorspelt ${DATA.race.riegel}. Dit blok traint twee dingen: <strong>lang net onder de drempel doorgaan</strong> en <strong>op tempo lopen met moeë benen</strong>.</p>
+    <div class="note">Harde regel op 20 september: <strong>niet boven 175 bpm vóór kilometer 11</strong>.</div>
+  </section>`;
+
+  DATA.weeks.forEach(w=>{
+    const sess = pl.filter(p=>p.week===w.n);
+    const a = agg.find(x=>x.w.n===w.n);
+    const now = TODAY_ISO>=w.from && TODAY_ISO<=w.to;
+    h += `<details class="wk${now?' now':''}" ${now?'open':''}>
+      <summary>
+        <span class="wt">Week ${w.n}${w.n===6?' · wedstrijdweek':''}</span>
+        <span class="small muted num">${a.done.toFixed(0)} / ${w.km} km</span>
+        <span class="muted">›</span>
+      </summary>
+      <div class="inner">
+        <div class="tiny muted" style="margin-bottom:8px">${fmtDate(w.from)} t/m ${fmtDate(w.to)}</div>
+        ${sess.map(p=>`<div style="margin-bottom:14px">${sessionBlock(p, p.status==='done'||p.status==='today')}</div>`).join('')}
+      </div>
+    </details>`;
+  });
+  return h;
+};
+
+V.voortgang = () => {
+  const agg = weekAgg();
+  const rs = runsOf(allActs());
+  let h='';
+
+  const rows = agg.map(x=>({label:'w'+x.w.n, a:x.done, b:x.w.km,
+    tipA:`Week ${x.w.n} gelopen: ${x.done.toFixed(1).replace('.',',')} km`,
+    tipB:`Week ${x.w.n} gepland: ${x.w.km} km`}));
+  h += `<section class="card">
+    <h2>Weekvolume · gelopen tegen plan</h2>
+    ${barChart(rows,{dual:true,h:150})}
+    <div class="legend"><span><i style="background:var(--s1)"></i>gelopen</span><span><i style="background:var(--axis)"></i>gepland</span></div>
+    <p class="small sec" style="margin:8px 0 0">Het schema bouwt met ongeveer 10% per week op, met de zwaarste week op 25–31 augustus. Meer dan dat is precies hoe de belastingverhouding begin augustus naar 1,5 sprong.</p>
+    <button class="tblbtn" data-tbl="wk">tabel</button>
+    <div id="tbl-wk" hidden>${tableOf(['Week','Gepland','Gelopen','Verschil'],
+      agg.map(x=>[`Week ${x.w.n}`, x.w.km+' km', x.done.toFixed(1).replace('.',',')+' km',
+        (x.done-x.w.km>=0?'+':'')+(x.done-x.w.km).toFixed(1).replace('.',',')]))}</div>
+  </section>`;
+
+  /* kwaliteitssessies */
+  const q = planWithActual().filter(p=>p.band!=='140-150' && p.act);
+  h += `<section class="card">
+    <h2>Kwaliteitssessies · zat de hartslag in de band?</h2>`;
+  if(!q.length){
+    h += `<p class="small sec" style="margin:0">Nog geen kwaliteitssessie uit dit blok gelogd. De eerste staat op zaterdag 15 augustus: 3× 12 min op 168–172.</p>`;
+  } else {
+    q.forEach(p=>{
+      const bc = bandCheck(p.act, p.band);
+      h += `<div class="item"><div class="st">${bc&&bc.hit>=Math.ceil(bc.total/2)?'✓':'!'}</div>
+        <div class="body"><div class="t">${esc(p.title)}</div>
+        <div class="d">${fmtDate(p.date)} · doel ${p.band.replace('-','–')} · gelopen op ${p.act.hr?Math.round(p.act.hr):'–'} bpm gemiddeld</div></div></div>`;
+    });
+  }
+  h += `</section>`;
+
+  /* drift */
+  const drifts = rs.map(a=>({a,d:drift(a)})).filter(x=>x.d).slice(0,10).reverse();
+  if(drifts.length>1){
+    h += `<section class="card">
+      <h2>Hartslagdrift op duurlopen</h2>
+      ${lineChart([{color:'var(--s2)', pts: drifts.map(x=>({v:x.d.d, label:parse(x.a.date).getDate()+'/'+(parse(x.a.date).getMonth()+1),
+        tip:`${x.a.date}: ${x.d.first} → ${x.d.last} bpm`}))}], {h:150, fmtY:v=>(v>0?'+':'')+Math.round(v)})}
+      <p class="small sec" style="margin:8px 0 0">Verschil tussen de eerste en laatste hele kilometer, alleen op vlakke rustige duurlopen boven 7 km — intervallen en heuvels vertekenen dit getal. Boven +10 bij koel weer is het een signaal; in de hitte van juli en augustus is drift verwacht gedrag.</p>
+    </section>`;
+  }
+
+  /* tempo bij hartslag */
+  h += `<section class="card">
+    <h2>Wat je tempo is bij welke hartslag</h2>
+    <p class="small sec" style="margin:0 0 8px">Uit alle 2026-data sinds 1 mei, gemeten bij 27–34 °C — in september ben je bij dezelfde hartslag sneller.</p>
+    ${tableOf(['Hartslag','Mediaan tempo',''], DATA.hrPace.map(r=>[r.band+' bpm', r.pace+'/km', r.band==='165–169'?'doeltempo':(r.band==='175–179'?'waar 2024 werd gelopen':'')]))}
+  </section>`;
+  return h;
+};
+
+V.jaar = () => {
+  const months = Object.entries(DATA.yearKm);
+  let h='';
+  h += `<section class="card"><h2>Profiel</h2>
+    <div class="tiles">
+      <div class="tile"><div class="k">Drempel (LTHR)</div><div class="v num">${DATA.profile.lthr}</div><div class="n">twee keer gemeten, mrt &amp; jul</div></div>
+      <div class="tile"><div class="k">Maximale hartslag</div><div class="v num">${DATA.profile.maxhr}</div><div class="n">193 verworpen als artefact</div></div>
+      <div class="tile"><div class="k">VO2max</div><div class="v num">${DATA.profile.vo2max}</div><div class="n">van ${DATA.profile.vo2max_start} in januari</div></div>
+      <div class="tile"><div class="k">Aerobe efficiëntie</div><div class="v num">${String(DATA.profile.ae).replace('.',',')}</div><div class="n">m/min/bpm, vlak in 2026</div></div>
+    </div></section>`;
+
+  h += `<section class="card"><h2>Kilometers per maand · 2026</h2>
+    ${barChart(months.map(([m,v])=>({label:MONTHS[Number(m.slice(5,7))-1], a:v, tipA:`${MONTHS[Number(m.slice(5,7))-1]}: ${v} km`,
+      color: m==='2026-08'?'var(--axis)':'var(--s1)'})),{h:150})}
+    <p class="small sec" style="margin:8px 0 0">Augustus loopt nog. De piek lag in mei op 182 km; sinds 12 juli is er geen duurloop boven 16 km geweest — dat is precies het gat dat weken 2 en 3 dichten.</p>
+  </section>`;
+
+  const zc = {Z1:'var(--s3)',Z2:'var(--s1)',Z3:'var(--s4)',Z4:'var(--s2)',Z5:'var(--s5)'};
+  h += `<section class="card"><h2>Zoneverdeling 2026</h2>
+    ${stackBar(Object.entries(DATA.yearZones).map(([z,v])=>({v, color:zc[z], tip:`${z}: ${v}%`})), 22)}
+    <div class="legend">${Object.entries(DATA.yearZones).map(([z,v])=>`<span><i style="background:${zc[z]}"></i>${z} ${v}%</span>`).join('')}</div>
+    <p class="small sec" style="margin:10px 0 0">88% rustig tegen 7% hard — klassiek gepolariseerd. Lees dit als rustig (Z1+Z2) tegen hard (Z4+Z5); de grens tussen Z1 en Z2 valt dwars door je meest gelopen hartslag en is daarom onstabiel.</p>
+  </section>`;
+
+  h += `<section class="card"><h2>Zonegrenzen · geankerd op drempel 180</h2>
+    ${tableOf(['Zone','Bereik','' ], DATA.zones.map(z=>[z.z, z.lo+'–'+z.hi, z.label]))}
+    <p class="small sec" style="margin:8px 0 0">Alleen de grens op 180 is gemeten. De grenzen daaronder zijn vuistregelpercentages op dat ene anker — de bovenkant is solide, de onderkant geïnterpoleerd.</p>
+  </section>`;
+
+  h += `<section class="card"><h2>Wedstrijden 2026</h2>
+    ${DATA.races2026.map(r=>`<div class="item"><div class="st">🏅</div><div class="body">
+      <div class="t">${esc(r.name)} · ${r.time}</div>
+      <div class="d">${fmtDate(r.date)} · ${r.pace} · gem. ${r.hr} bpm<br>1e helft ${r.h1} → 2e helft ${r.h2} · verval ${r.fade}</div>
+    </div></div>`).join('')}
+    <p class="small sec" style="margin:8px 0 0">Harder starten leverde 3 s/km op en verdubbelde het verval. Dat is de reden dat het doeltempo een hartslagplafond heeft in plaats van een tempoplafond.</p>
+  </section>`;
+
+  const d24 = DATA.dtd2024;
+  h += `<section class="card"><h2>Dam tot Dam 2024 · waar het misging</h2>
+    ${lineChart([{color:'var(--s2)', pts: d24.hr.map((v,i)=>({v, label:(i%3===0)?String(i+1):'', tip:`km ${i+1}: ${v} bpm, ${Math.floor(d24.pace[i]/60)}:${String(d24.pace[i]%60).padStart(2,'0')}/km`}))}],
+      {h:150, min:150, max:190})}
+    <p class="small sec" style="margin:8px 0 0">Vanaf km 13 <em>daalt</em> de hartslag (178 → 173) terwijl het tempo instort (4:42 → 4:58). Dalende hartslag bij dalend tempo is geen cardiovasculaire limiet maar spiervermoeidheid: hij liep 74 minuten op 98% van zijn drempel.</p>
+  </section>`;
+  return h;
+};
+
+function tableOf(head, rows){
+  return `<table class="dt"><thead><tr>${head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+}
+
+/* ---------- tabs & routing ---------- */
+const TABS = [
+  {id:'vandaag', label:'Vandaag', title:'Vandaag', icon:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'},
+  {id:'schema',  label:'Schema',  title:'Trainingsschema', icon:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18M8 15h3"/>'},
+  {id:'voortgang',label:'Voortgang',title:'Voortgang', icon:'<path d="M4 19V5"/><path d="M4 15l5-5 4 3 7-8"/>'},
+  {id:'jaar',    label:'Jaar',    title:'Jaaroverzicht', icon:'<path d="M12 21a9 9 0 1 0-9-9"/><path d="M12 7v5l4 2"/><path d="M3 12l3-2 2 3"/>'},
+];
+let tab = LS.get('tab','vandaag');
+
+function render(){
+  const t = TABS.find(x=>x.id===tab) || TABS[0];
+  document.getElementById('ttl').textContent = t.title;
+  const dtd = dayDiff(DATA.race.date, TODAY_ISO);
+  document.getElementById('sub').textContent =
+    fmtDate(TODAY_ISO) + ' · nog ' + dtd + ' ' + (dtd===1?'dag':'dagen') + ' tot Dam tot Dam';
+  document.getElementById('view').innerHTML = V[t.id]();
+  document.getElementById('tabs').innerHTML = TABS.map(x=>
+    `<button data-tab="${x.id}" aria-current="${x.id===tab}"><svg viewBox="0 0 24 24">${x.icon}</svg>${x.label}</button>`).join('');
+  window.scrollTo(0,0);
+}
+
+document.getElementById('tabs').addEventListener('click', e=>{
+  const b = e.target.closest('button[data-tab]'); if(!b) return;
+  tab = b.dataset.tab; LS.set('tab',tab); render();
+});
+document.addEventListener('click', e=>{
+  const t = e.target.closest('[data-tbl]');
+  if(t){ const el=document.getElementById('tbl-'+t.dataset.tbl); el.hidden=!el.hidden; t.textContent = el.hidden?'tabel':'verberg tabel'; }
+  const s = e.target.closest('[data-sheet]');
+  if(s) openSheet(s.dataset.sheet);
+  if(e.target.closest('[data-close]')) closeSheet();
+});
+
+/* tooltip */
+const tt = document.getElementById('tt');
+document.addEventListener('pointerover', e=>{
+  const el = e.target.closest('[data-tip]');
+  if(!el || !el.dataset.tip){ tt.classList.remove('on'); return; }
+  tt.textContent = el.dataset.tip; tt.classList.add('on');
+  const r = el.getBoundingClientRect();
+  tt.style.left = Math.min(Math.max(r.left+r.width/2-70, 8), innerWidth-150)+'px';
+  tt.style.top = Math.max(r.top-40, 8)+'px';
+});
+document.addEventListener('pointerout', ()=>tt.classList.remove('on'));
+
+/* ---------- sheets ---------- */
+const sheet = document.getElementById('sheet'), panel = document.getElementById('panel');
+function closeSheet(){ sheet.classList.remove('on'); }
+function openSheet(kind){
+  panel.innerHTML = kind==='log' ? logSheet() : settingsSheet();
+  sheet.classList.add('on');
+  wireSheet(kind);
+}
+function logSheet(){
+  const log = LS.get('log',{})[TODAY_ISO]||{};
+  return `<h2>Vandaag invullen</h2>
+    <p class="small sec" style="margin:-6px 0 4px">Rust-hartslag, slaap en HRV komen niet uit Strava. Vul ze hier in — ze blijven op dit apparaat.</p>
+    <label class="f">Rust-hartslag (bpm)<input class="f" type="number" inputmode="numeric" id="f-rhr" value="${log.rhr||''}" placeholder="${DATA.profile.rhr}"></label>
+    <label class="f">Slaap (uren)<input class="f" type="number" step="0.25" inputmode="decimal" id="f-sleep" value="${log.sleep||''}" placeholder="7,5"></label>
+    <label class="f">HRV (ms)<input class="f" type="number" inputmode="numeric" id="f-hrv" value="${log.hrv||''}" placeholder="optioneel"></label>
+    <label class="f">Hoe voelt het?
+      <select class="f" id="f-feel">
+        <option value="">—</option>
+        ${['fris','normaal','moe','erg moe'].map(v=>`<option ${log.feel===v?'selected':''}>${v}</option>`).join('')}
+      </select></label>
+    <button class="btn" id="f-save">Opslaan</button>
+    <button class="btn ghost" data-close>Annuleren</button>`;
+}
+function settingsSheet(){
+  const cfg = LS.get('strava',{});
+  const live = LS.get('live',[]);
+  const url = location.origin+location.pathname;
+  return `<h2>Instellingen</h2>
+    <div class="seg" role="group">
+      ${[['auto','Systeem'],['light','Licht'],['dark','Donker']].map(([v,l])=>
+        `<button data-theme-set="${v}" aria-pressed="${(LS.get('theme','auto'))===v}">${l}</button>`).join('')}
+    </div>
+    <hr class="sep">
+    <h2 style="font-size:16px">Strava-koppeling</h2>
+    <p class="small sec" style="margin:-6px 0 0">${live.length? `Gekoppeld — ${live.length} activiteiten opgehaald sinds de laatste sync.` : 'Nog niet gekoppeld. De app draait nu op de basisdata van 15 augustus 2026.'}</p>
+    <div class="note">Maak eenmalig een API-applicatie aan op <strong>strava.com/settings/api</strong>. Zet daar bij <em>Authorization Callback Domain</em> het domein van deze pagina: <strong class="num">${esc(location.hostname||'localhost')}</strong>. Kopieer daarna de Client ID en Client Secret hierheen.</div>
+    <label class="f">Client ID<input class="f" id="s-id" value="${esc(cfg.id||'')}" inputmode="numeric" placeholder="123456"></label>
+    <label class="f">Client Secret<input class="f" id="s-secret" type="password" value="${esc(cfg.secret||'')}" placeholder="••••••••"></label>
+    <button class="btn" id="s-connect">${cfg.token?'Opnieuw koppelen':'Koppelen met Strava'}</button>
+    ${cfg.token?'<button class="btn ghost" id="s-sync">Nu synchroniseren</button>':''}
+    ${cfg.token||live.length?'<button class="btn ghost" id="s-clear">Koppeling wissen</button>':''}
+    <div class="note tiny">Je secret blijft in de opslag van deze browser en wordt alleen naar Strava zelf gestuurd. Dat is werkbaar voor een app die alleen jij gebruikt; ga je 'm delen, dan hoort de tokenwissel achter een eigen servertje.</div>
+    <hr class="sep">
+    <p class="tiny muted">Basisdata gegenereerd op ${DATA.generated} uit de Garmin-export van 9 augustus 2026 en Strava. Alle output is een startpunt, geen medisch advies.</p>
+    <button class="btn ghost" data-close>Sluiten</button>`;
+}
+function wireSheet(kind){
+  if(kind==='log'){
+    document.getElementById('f-save').onclick = ()=>{
+      const log = LS.get('log',{});
+      log[TODAY_ISO] = {
+        rhr: +document.getElementById('f-rhr').value||null,
+        sleep: +document.getElementById('f-sleep').value||null,
+        hrv: +document.getElementById('f-hrv').value||null,
+        feel: document.getElementById('f-feel').value||null };
+      LS.set('log',log); closeSheet(); render();
+    };
+    return;
+  }
+  panel.querySelectorAll('[data-theme-set]').forEach(b=> b.onclick = ()=>{
+    const v=b.dataset.themeSet; LS.set('theme',v); applyTheme();
+    panel.querySelectorAll('[data-theme-set]').forEach(x=>x.setAttribute('aria-pressed', x.dataset.themeSet===v));
+  });
+  const idEl=document.getElementById('s-id'), secEl=document.getElementById('s-secret');
+  const conn=document.getElementById('s-connect');
+  if(conn) conn.onclick = ()=>{
+    const id=idEl.value.trim(), secret=secEl.value.trim();
+    if(!id||!secret){ alert('Vul eerst Client ID en Client Secret in.'); return; }
+    LS.set('strava', Object.assign(LS.get('strava',{}), {id, secret}));
+    const redirect = location.origin+location.pathname;
+    location.href = 'https://www.strava.com/oauth/authorize?client_id='+encodeURIComponent(id)+
+      '&redirect_uri='+encodeURIComponent(redirect)+'&response_type=code&approval_prompt=auto&scope=activity:read_all';
+  };
+  const sync=document.getElementById('s-sync'); if(sync) sync.onclick = ()=>syncStrava(true);
+  const clr=document.getElementById('s-clear'); if(clr) clr.onclick = ()=>{
+    LS.del('strava'); LS.del('live'); closeSheet(); render();
+  };
+}
+document.getElementById('settingsBtn').onclick = ()=>openSheet('settings');
+
+/* ---------- theme ---------- */
+function applyTheme(){
+  const v = LS.get('theme','auto');
+  document.documentElement.setAttribute('data-theme', v);
+  render();
+}
+
+/* ---------- Strava live ---------- */
+async function exchangeCode(code){
+  const cfg = LS.get('strava',{});
+  const r = await fetch('https://www.strava.com/oauth/token', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({client_id:cfg.id, client_secret:cfg.secret, code, grant_type:'authorization_code'})});
+  if(!r.ok) throw new Error('Tokenaanvraag mislukt ('+r.status+')');
+  const j = await r.json();
+  LS.set('strava', Object.assign(cfg, {token:j.access_token, refresh:j.refresh_token, exp:j.expires_at}));
+}
+async function freshToken(){
+  const cfg = LS.get('strava',{});
+  if(!cfg.token) return null;
+  if(cfg.exp && cfg.exp*1000 > Date.now()+6e4) return cfg.token;
+  const r = await fetch('https://www.strava.com/oauth/token', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({client_id:cfg.id, client_secret:cfg.secret, refresh_token:cfg.refresh, grant_type:'refresh_token'})});
+  if(!r.ok) return null;
+  const j = await r.json();
+  LS.set('strava', Object.assign(cfg, {token:j.access_token, refresh:j.refresh_token, exp:j.expires_at}));
+  return j.access_token;
+}
+async function syncStrava(loud){
+  const token = await freshToken();
+  if(!token){ if(loud) alert('Geen geldige koppeling. Koppel opnieuw.'); return; }
+  const after = Math.floor(new Date(DATA.generated+'T00:00:00').getTime()/1000) - 86400*3;
+  try{
+    const r = await fetch('https://www.strava.com/api/v3/athlete/activities?per_page=100&after='+after,
+      {headers:{Authorization:'Bearer '+token}});
+    if(!r.ok) throw new Error('Strava gaf '+r.status);
+    const j = await r.json();
+    const mapped = j.map(a=>({
+      id:String(a.id), name:a.name, sport:a.sport_type||a.type,
+      date:(a.start_date_local||'').slice(0,10), time:(a.start_date_local||'').slice(11,16),
+      dist_m:a.distance, moving_s:a.moving_time, elev_m:a.total_elevation_gain,
+      avg_ms:a.average_speed, max_ms:a.max_speed, effort:a.suffer_score||null,
+      kcal:a.calories||null, cadence:a.average_cadence||null,
+      hr:a.average_heartrate||null, hrmax:a.max_heartrate||null, desc:a.description||undefined
+    })).filter(a=>a.date>='2026-01-01');
+    LS.set('live', mapped); LS.set('synced', new Date().toISOString());
+    if(loud){ closeSheet(); }
+    render();
+    if(loud) setTimeout(()=>alert(mapped.length+' activiteiten opgehaald.'),100);
+  }catch(err){ if(loud) alert('Synchroniseren mislukt: '+err.message); }
+}
+
+/* ---------- boot ---------- */
+(async function(){
+  document.documentElement.setAttribute('data-theme', LS.get('theme','auto'));
+  const q = new URLSearchParams(location.search);
+  if(q.get('code')){
+    try{ await exchangeCode(q.get('code')); history.replaceState({},'',location.pathname); await syncStrava(false); }
+    catch(err){ history.replaceState({},'',location.pathname); alert('Koppelen mislukt: '+err.message); }
+  }
+  render();
+  if(LS.get('strava',{}).token) syncStrava(false);
+})();
+
+/* service worker: cache de app zelf zodat hij offline opent */
+if('serviceWorker' in navigator && location.protocol==='https:'){
+  const sw = `const C='pt-v1';
+  self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(C).then(c=>c.add('./')))});
+  self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
+  self.addEventListener('fetch',e=>{
+    if(e.request.method!=='GET'||new URL(e.request.url).origin!==location.origin) return;
+    e.respondWith(fetch(e.request).then(r=>{const cl=r.clone();caches.open(C).then(c=>c.put(e.request,cl));return r})
+      .catch(()=>caches.match(e.request).then(r=>r||caches.match('./'))));
+  });`;
+  navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'text/javascript'})),{scope:'./'}).catch(()=>{});
+}
+/* webmanifest inline zodat het bestand standalone blijft */
+(function(){
+  const m = {name:'Personal Trainer',short_name:'Trainer',start_url:'./',display:'standalone',
+    background_color:'#0d0d0d',theme_color:'#0d0d0d',orientation:'portrait',
+    icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%232a78d6'/%3E%3Cpath d='M12 44 L24 28 L34 36 L52 16' stroke='white' stroke-width='6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E",
+      sizes:'any',type:'image/svg+xml',purpose:'any'}]};
+  const l=document.createElement('link'); l.rel='manifest';
+  l.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/manifest+json'}));
+  document.head.appendChild(l);
+})();
+</script>
+</body>
+</html>
