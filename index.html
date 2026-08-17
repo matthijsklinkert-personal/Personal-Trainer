@@ -265,14 +265,59 @@ function weekAgg(){
 }
 function currentWeek(){ return DATA.weeks.find(w=>TODAY_ISO>=w.from && TODAY_ISO<=w.to) || DATA.weeks[0]; }
 
-/* drift: eerste vs laatste hele km-lap bij rustige duurloop.
-   Alleen zinnig op een gelijkmatige rustige loop — intervallen en heuvels eruit. */
-function isEasy(a){ return a.sport==='Run' && a.dist_m>7000 && a.hr && a.hr<=157 && (a.elev_m||0) < 80; }
+/* ---------- drift · één definitie, gebruikt in app én in de analyses ----------
+   Twee helften van de loop, tijdgewogen. Twee getallen uit dezelfde splitsing:
+     · bpm  = hartslag tweede helft minus eerste helft
+     · ontk = ontkoppeling in %, oftewel hoeveel de verhouding snelheid/hartslag
+              verslechtert tussen de helften. Onder 5% is normaal.
+   Waarom niet eerste tegen laatste kilometer: kilometer 1 zit nog in de opwarmramp
+   vanaf rusthartslag en is structureel te laag, wat het verschil kunstmatig opblaast.
+   Toelating: hardlopen, minimaal 8 km, onder 80 hoogtemeters, gemiddelde hartslag
+   onder 157, en de twee helften minder dan 4% in tempo uit elkaar. Buiten die
+   voorwaarden is drift geen bruikbaar getal en toont de app niets. */
+const DRIFT = {minKm:8, maxElev:80, maxHr:157, maxPaceGap:0.04, maxSpread:25, minLap:120, minCover:0.8, warn:5};
+
 function drift(a){
-  if(!a.laps || !isEasy(a)) return null;
-  const L = a.laps.filter(l=>l.d>=850 && l.hr);
-  if(L.length<4) return null;
-  return { d: Math.round(L[L.length-1].hr - L[0].hr), first: Math.round(L[0].hr), last: Math.round(L[L.length-1].hr), n:L.length };
+  if(a.sport!=='Run' || !a.laps) return null;
+  if(a.dist_m < DRIFT.minKm*1000) return null;
+  if((a.elev_m||0) >= DRIFT.maxElev) return null;
+  if(!a.hr || a.hr >= DRIFT.maxHr) return null;
+
+  // Alleen ronden van minimaal twee minuten. Zo vallen strides en korte versnellingen
+  // eruit zonder de hele duurloop te verwerpen — een rustige loop met zes strides aan
+  // het eind blijft bruikbaar, de strides tellen alleen niet mee.
+  const L = a.laps.filter(l=>l.hr && l.t>=DRIFT.minLap && l.d>=50);
+  if(L.length<6) return null;
+
+  // Wat dan nog steeds sterk schommelt is een intervaltraining: daar meet je het
+  // trainingsschema in plaats van drift.
+  const hrs = L.map(l=>l.hr);
+  if(Math.max(...hrs) - Math.min(...hrs) > DRIFT.maxSpread) return null;
+
+  // De overgebleven ronden moeten wél de loop zijn. Bij een intervalsessie blijven na
+  // het wegfilteren alleen warming-up en cooldown over; drift daartussen meten zegt niets.
+  const kept = L.reduce((s,l)=>s+l.t,0);
+  if(kept < a.moving_s * DRIFT.minCover) return null;
+
+  const tot = L.reduce((s,l)=>s+l.t,0), half = tot/2;
+  const A=[], B=[]; let acc=0;
+  L.forEach(l=>{ (acc + l.t/2 <= half ? A : B).push(l); acc += l.t; });
+  if(A.length<2 || B.length<2) return null;
+
+  const agg = X => {
+    const t = X.reduce((s,l)=>s+l.t,0), d = X.reduce((s,l)=>s+l.d,0);
+    return {t, d, hr: X.reduce((s,l)=>s+l.hr*l.t,0)/t, v: d/t};
+  };
+  const x = agg(A), y = agg(B);
+  if(Math.abs(x.v-y.v)/x.v > DRIFT.maxPaceGap) return null;   // geen gelijkmatige loop
+
+  const r1 = x.v/x.hr, r2 = y.v/y.hr;
+  return {
+    bpm: Math.round(y.hr - x.hr),
+    ontk: Math.round((r1-r2)/r1*1000)/10,
+    hr1: Math.round(x.hr), hr2: Math.round(y.hr),
+    p1: pace(x.d, x.t), p2: pace(y.d, y.t)
+  };
 }
 /* Haalde hij de doelband in de wérkblokken? Het sessiegemiddelde zegt hier niets:
    warming-up, dribbelherstel en cooldown drukken het omlaag. Daarom worden de blokken
@@ -375,6 +420,11 @@ function lineChart(series, opt){
     s.pts.forEach((p,i)=>{ g+=`<circle cx="${x(i).toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="3.6" fill="${s.color}" stroke="var(--card)" stroke-width="2" data-tip="${esc(p.tip||'')}"/>`; });
   });
   series[0].pts.forEach((p,i)=>{ if(p.label) g+=`<text x="${x(i)}" y="${H-6}" text-anchor="middle" font-size="9" fill="var(--muted)">${esc(p.label)}</text>`; });
+  if(opt.ref!=null && opt.ref>=lo && opt.ref<=hi){
+    const yy=y(opt.ref);
+    g+=`<line x1="${PL}" x2="${W-PR}" y1="${yy}" y2="${yy}" stroke="var(--text-secondary)" stroke-width="1.5" stroke-dasharray="3 4"/>`+
+       `<text x="${W-PR}" y="${yy-5}" text-anchor="end" font-size="9" fill="var(--text-secondary)">${esc(opt.refLabel||'')}</text>`;
+  }
   return svg(W,H,g);
 }
 function stackBar(parts, h){
@@ -601,14 +651,28 @@ V.voortgang = () => {
   }
   h += `</section>`;
 
-  /* drift */
+  /* drift · ontkoppeling */
   const drifts = rs.map(a=>({a,d:drift(a)})).filter(x=>x.d).slice(0,10).reverse();
-  if(drifts.length>1){
+  if(drifts.length){
+    const last = drifts[drifts.length-1];
     h += `<section class="card">
-      <h2>Hartslagdrift op duurlopen</h2>
-      ${lineChart([{color:'var(--s2)', pts: drifts.map(x=>({v:x.d.d, label:parse(x.a.date).getDate()+'/'+(parse(x.a.date).getMonth()+1),
-        tip:`${x.a.date}: ${x.d.first} → ${x.d.last} bpm`}))}], {h:150, fmtY:v=>(v>0?'+':'')+Math.round(v)})}
-      <p class="small sec" style="margin:8px 0 0">Verschil tussen de eerste en laatste hele kilometer, alleen op vlakke rustige duurlopen boven 7 km — intervallen en heuvels vertekenen dit getal. Boven +10 bij koel weer is het een signaal; in de hitte van juli en augustus is drift verwacht gedrag.</p>
+      <h2>Drift op gelijkmatige duurlopen</h2>
+      <div class="row" style="justify-content:space-between;align-items:flex-end;margin-bottom:2px">
+        <div class="hero"><span class="v num">${String(last.d.ontk).replace('.',',')}%</span><span class="u">ontkoppeling · ${last.d.bpm>0?'+':''}${last.d.bpm} bpm</span></div>
+        <span class="tiny muted">${fmtDate(last.a.date)}</span>
+      </div>
+      <p class="tiny muted" style="margin:0 0 10px">${last.d.hr1} → ${last.d.hr2} bpm · ${last.d.p1} → ${last.d.p2}/km</p>
+      ${drifts.length>1 ? lineChart([{color:'var(--s2)', pts: drifts.map(x=>({v:x.d.ontk,
+          label:parse(x.a.date).getDate()+'/'+(parse(x.a.date).getMonth()+1),
+          tip:`${fmtDate(x.a.date)}: ${String(x.d.ontk).replace('.',',')}% · ${x.d.bpm>0?'+':''}${x.d.bpm} bpm`}))}],
+        {h:150, min:0, max:Math.max(DRIFT.warn+1.5, ...drifts.map(x=>x.d.ontk)),
+         fmtY:v=>Math.round(v)+'%', ref:DRIFT.warn, refLabel:'grens '+DRIFT.warn+'%'}) : ''}
+      <p class="small sec" style="margin:8px 0 0">Twee helften van de loop, tijdgewogen. De ontkoppeling zegt hoeveel de verhouding tussen snelheid en hartslag verslechtert tussen de eerste en tweede helft; onder ${DRIFT.warn}% is normaal. Het bpm-verschil staat ernaast als leesbaar getal — dezelfde splitsing, dus dezelfde uitkomst als in de analyses.</p>
+      <button class="tblbtn" data-tbl="drift">tabel</button>
+      <div id="tbl-drift" hidden>${tableOf(['Datum','bpm','Ontkoppeling','Tempo 1e → 2e'],
+        drifts.slice().reverse().map(x=>[fmtDate(x.a.date), (x.d.bpm>0?'+':'')+x.d.bpm,
+          String(x.d.ontk).replace('.',',')+'%', x.d.p1+' → '+x.d.p2]))}</div>
+      <p class="tiny muted" style="margin:8px 0 0">Alleen hardlopen boven ${DRIFT.minKm} km, onder ${DRIFT.maxElev} hoogtemeters, gemiddeld onder ${DRIFT.maxHr} bpm, minder dan 4% tempoverschil tussen de helften, en maximaal ${DRIFT.maxSpread} bpm spreiding tussen de ronden. Alleen ronden van minimaal twee minuten tellen mee, dus strides vervuilen het getal niet; intervalsessies vallen als geheel af. Valt een training buiten die voorwaarden, dan staat hij hier niet: geen getal is beter dan een misleidend getal.</p>
     </section>`;
   }
 
