@@ -144,6 +144,10 @@ svg.chart{display:block;width:100%;height:auto;overflow:visible}
 .legend span{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--text-secondary)}
 .legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
 .tblbtn{background:none;border:0;color:var(--muted);font:inherit;font-size:11.5px;cursor:pointer;padding:4px 0;text-decoration:underline}
+details.more>summary{list-style:none;cursor:pointer;color:var(--accent);font-size:12.5px;font-weight:600;padding:8px 0 2px}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary::after{content:'\203A';display:inline-block;margin-left:6px;transform:rotate(90deg)}
+details.more[open]>summary::after{transform:rotate(-90deg)}
 table.dt{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums;margin-top:6px}
 table.dt th,table.dt td{text-align:right;padding:4px 6px;border-bottom:1px solid var(--grid)}
 table.dt th:first-child,table.dt td:first-child{text-align:left}
@@ -774,6 +778,7 @@ V.schema = () => {
   let h = `<section class="card">
     <h2>Het plan in één regel</h2>
     <p class="small sec" style="margin:0">Tien weken naar Egmond, op <strong>drie trainingen per week</strong>. De drift op rustig tempo is sinds augustus gezakt van zo'n tien slagen naar een handvol, en hetzelfde drempeltempo kost vijf tot zeven slagen minder dan drie weken geleden. Wat nu telt is <strong>volume uit de zondag</strong> en <strong>lang op wedstrijdtempo doorgaan</strong>. Op drie lopen draagt de lange duurloop de week: bij twijfel kort je de kwaliteitssessie in, niet de zondag.</p>
+    <details class="more"><summary>Doel, opbouw en context</summary>
     <div class="note">Doel: <strong>${esc(DATA.race.name)} in ${DATA.race.goal}</strong> (${DATA.race.goal_pace}). <em>${esc(DATA.race.tbd_note)}</em></div>
     <div class="note" style="margin-top:8px"><strong>${fmtDate(DATA.checkpoint.date)}</strong> — ${esc(DATA.checkpoint.t)} — is de eerste toets.</div>
     <div style="margin-top:12px">${phases.map(f=>`<div class="item">
@@ -781,6 +786,7 @@ V.schema = () => {
       <div class="body"><div class="t">${esc(f.name)} · week ${f.from}${f.to>f.from?'–'+f.to:''}</div>
         <div class="d">${esc(f.goal)}</div></div>
       <div class="r tiny">${fmtDate(DATA.weeks[f.from-1].from)}</div></div>`).join('')}</div>
+    </details>
   </section>`;
 
   DATA.weeks.forEach(w=>{
@@ -908,58 +914,6 @@ V.voortgang = () => {
     }
   }
 
-  return h;
-};
-
-V.jaar = () => {
-  const months = Object.entries(DATA.yearKm);
-  let h='';
-  h += `<section class="card"><h2>Profiel</h2>
-    <div class="tiles">
-      <div class="tile"><div class="k">Drempel (LTHR)</div><div class="v num">${DATA.profile.lthr}</div><div class="n">gemeten op 20 sep · was ${DATA.profile.lthr_prev}</div></div>
-      <div class="tile"><div class="k">Maximale hartslag</div><div class="v num">${DATA.profile.maxhr}</div><div class="n">193 verworpen als artefact</div></div>
-      <div class="tile"><div class="k">VO2max</div><div class="v num">${DATA.profile.vo2max}</div><div class="n">van ${DATA.profile.vo2max_start} in januari</div></div>
-      <div class="tile"><div class="k">Aerobe efficiëntie</div><div class="v num">${String(DATA.profile.ae).replace('.',',')}</div><div class="n">m/min/bpm, vlak in 2026</div></div>
-    </div></section>`;
-
-  h += `<section class="card"><h2>Kilometers per maand · 2026</h2>
-    ${barChart(months.map(([m,v])=>({label:MONTHS[Number(m.slice(5,7))-1], a:v, tipA:`${MONTHS[Number(m.slice(5,7))-1]}: ${v} km`,
-      color: m==='2026-08'?'var(--axis)':'var(--s1)'})),{h:150})}
-    <p class="small sec" style="margin:8px 0 0">De piek lag in mei op ${Math.max(...months.map(x=>x[1]))} km. Augustus kwam op 153 km uit, september op ${DATA.yearKm['2026-09']} km inclusief de taper en de race, en oktober op ${DATA.yearKm['2026-10']} km. Het blok naar Egmond houdt dat niveau vast op drie lopen per week in plaats van vier, met een piek van 46,7 km in week 7 en de langste duurloop op 22 km.</p>
-  </section>`;
-
-  const zc = {Z1:'var(--s3)',Z2:'var(--s1)',Z3:'var(--s4)',Z4:'var(--s2)',Z5:'var(--s5)'};
-  h += `<section class="card"><h2>Zoneverdeling 2026</h2>
-    ${stackBar(Object.entries(DATA.yearZones).map(([z,v])=>({v, color:zc[z], tip:`${z}: ${v}%`})), 22)}
-    <div class="legend">${Object.entries(DATA.yearZones).map(([z,v])=>`<span><i style="background:${zc[z]}"></i>${z} ${v}%</span>`).join('')}</div>
-    <p class="small sec" style="margin:10px 0 0">88% rustig tegen 7% hard — klassiek gepolariseerd. Lees dit als rustig (Z1+Z2) tegen hard (Z4+Z5); de grens tussen Z1 en Z2 valt dwars door je meest gelopen hartslag en is daarom onstabiel.</p>
-  </section>`;
-
-  h += `<section class="card"><h2>Trainingsbanden · geankerd op drempel ${DATA.bands.anchor}</h2>
-    ${tableOf(['Band','Bereik','% van drempel','was'], DATA.bands.items.map(b=>[b.k, b.lo+'–'+b.hi+' bpm', b.pct, b.was]))}
-    <p class="small sec" style="margin:8px 0 0">${esc(DATA.profile.lthr_note)}</p>
-    <div class="note">Sessies uit het Dam tot Dam-blok worden nog beoordeeld op de band die toen gold. Zet de banden in je horloge op <strong>rustig 138–150</strong>, <strong>drempel 165–170 met alarm 173</strong> en <strong>halve marathon 158–166</strong>.</div>
-  </section>`;
-
-  h += `<section class="card"><h2>Garmin-zones · herankerd op ${DATA.profile.lthr}</h2>
-    ${tableOf(['Zone','Bereik','was','' ], DATA.zones.map(z=>[z.z, z.lo+'–'+z.hi, z.was||'—', z.label]))}
-    <p class="small sec" style="margin:8px 0 0">${esc(DATA.zones_note)}</p>
-  </section>`;
-
-  h += `<section class="card"><h2>Wedstrijden 2026</h2>
-    ${DATA.races2026.map(r=>`<div class="item"><div class="st">🏅</div><div class="body">
-      <div class="t">${esc(r.name)} · ${r.time}${r.pr?' <span class="pill good"><span class="dot"></span>PR</span>':''}</div>
-      <div class="d">${fmtDate(r.date)} · ${r.pace} · gem. ${r.hr} bpm<br>1e helft ${r.h1} → 2e helft ${r.h2} · verval ${r.fade}</div>
-    </div></div>`).join('')}
-    <p class="small sec" style="margin:8px 0 0">De eerste twee races verloren in de tweede helft (+6 en +14 s/km), beide gelopen op 179–181 bpm — boven de nu gemeten drempel van ${DATA.profile.lthr}. Dam tot Dam is de eerste met een negatieve split, en de enige die onder de drempel werd geopend. Dat is geen conditieverschil maar een uitvoeringsverschil.</p>
-  </section>`;
-
-  h += `<section class="card">
-    <h2>Wat je tempo is bij welke hartslag</h2>
-    ${tableOf(['Hartslag','Mediaan tempo','ronden',''], DATA.hrPace.map(r=>[r.band+' bpm', r.pace+'/km', String(r.n),
-      r.band==='160–164'?'halvemarathontempo':(r.band==='165–169'?'drempeltempo':(r.band==='175–179'?'boven drempel':''))]))}
-    <p class="tiny muted" style="margin:8px 0 0">${esc(DATA.hrPace_note)}</p>
-  </section>`;
 
   h += `<section class="card">
     <h2>Rustig tempo bij gelijke hartslag, per maand</h2>
@@ -973,8 +927,121 @@ V.jaar = () => {
       {h:150, min:150, max:190})}
     <p class="small sec" style="margin:8px 0 0">Vanaf km 13 <em>daalt</em> de hartslag (178 → 173) terwijl het tempo instort (4:42 → 4:58). Dalende hartslag bij dalend tempo is geen cardiovasculaire limiet maar spiervermoeidheid: hij liep 74 minuten op 98% van zijn drempel.</p>
   </section>`;
+
+  /* ---------- jaaroverzicht, met jaarselector ---------- */
+  h += `<div id="yearblock">${yearBlock(YEAR)}</div>`;
+
   return h;
 };
+
+V.profiel = () => {
+  let h='';
+  h += `<section class="card"><h2>Profiel</h2>
+    <div class="tiles">
+      <div class="tile"><div class="k">Drempel (LTHR)</div><div class="v num">${DATA.profile.lthr}</div><div class="n">gemeten op 20 sep · was ${DATA.profile.lthr_prev}</div></div>
+      <div class="tile"><div class="k">Maximale hartslag</div><div class="v num">${DATA.profile.maxhr}</div><div class="n">193 verworpen als artefact</div></div>
+      <div class="tile"><div class="k">VO2max</div><div class="v num">${DATA.profile.vo2max}</div><div class="n">van ${DATA.profile.vo2max_start} in januari</div></div>
+      <div class="tile"><div class="k">Aerobe efficiëntie</div><div class="v num">${String(DATA.profile.ae).replace('.',',')}</div><div class="n">m/min/bpm, vlak in 2026</div></div>
+    </div></section>`;
+
+  h += `<section class="card"><h2>Trainingsbanden · geankerd op drempel ${DATA.bands.anchor}</h2>
+    ${tableOf(['Band','Bereik','% van drempel','was'], DATA.bands.items.map(b=>[b.k, b.lo+'–'+b.hi+' bpm', b.pct, b.was]))}
+    <p class="small sec" style="margin:8px 0 0">${esc(DATA.profile.lthr_note)}</p>
+    <div class="note">Sessies uit het Dam tot Dam-blok worden nog beoordeeld op de band die toen gold. Zet de banden in je horloge op <strong>rustig 138–150</strong>, <strong>drempel 165–170 met alarm 173</strong> en <strong>halve marathon 158–166</strong>.</div>
+  </section>`;
+
+  h += `<section class="card"><h2>Garmin-zones · herankerd op ${DATA.profile.lthr}</h2>
+    ${tableOf(['Zone','Bereik','was','' ], DATA.zones.map(z=>[z.z, z.lo+'–'+z.hi, z.was||'—', z.label]))}
+    <p class="small sec" style="margin:8px 0 0">${esc(DATA.zones_note)}</p>
+  </section>`;
+
+  h += `<section class="card">
+    <h2>Wat je tempo is bij welke hartslag</h2>
+    ${tableOf(['Hartslag','Mediaan tempo','ronden',''], DATA.hrPace.map(r=>[r.band+' bpm', r.pace+'/km', String(r.n),
+      r.band==='160–164'?'halvemarathontempo':(r.band==='165–169'?'drempeltempo':(r.band==='175–179'?'boven drempel':''))]))}
+    <p class="tiny muted" style="margin:8px 0 0">${esc(DATA.hrPace_note)}</p>
+  </section>`;
+  return h;
+};
+
+/* ---------- jaaroverzicht · hangt onder Voortgang, met een jaarselector ----------
+   De maandkilometers komen uit de activiteiten zelf, zodat een volgend jaar vanzelf
+   meekomt. Waar activiteiten ontbreken valt het terug op de maandtotalen uit de seed. */
+const SEEDYEAR = (DATA.generated||TODAY_ISO).slice(0,4);
+
+function yearsAvailable(){
+  const ys = new Set([TODAY_ISO.slice(0,4)]);
+  runsOf(allActs()).forEach(a=>ys.add(a.date.slice(0,4)));
+  Object.keys(DATA.yearKm||{}).forEach(k=>ys.add(k.slice(0,4)));
+  (DATA.races2026||[]).forEach(r=>ys.add(r.date.slice(0,4)));
+  return [...ys].sort().reverse();
+}
+let YEAR = (()=>{ const now = TODAY_ISO.slice(0,4), ys = yearsAvailable();
+  return ys.includes(now) ? now : ys[0]; })();
+
+function yearMonths(y){
+  const sum = {};
+  runsOf(allActs()).forEach(a=>{ const k = a.date.slice(0,7);
+    if(k.slice(0,4)===y) sum[k] = (sum[k]||0) + a.dist_m/1000; });
+  const last = (y===TODAY_ISO.slice(0,4)) ? Number(TODAY_ISO.slice(5,7)) : 12;
+  const out = [];
+  for(let m=1;m<=last;m++){
+    const k = y+'-'+String(m).padStart(2,'0');
+    out.push([k, sum[k] ? Math.round(sum[k]) : Math.round((DATA.yearKm||{})[k]||0)]);
+  }
+  return out;
+}
+
+function yearZonesOf(y){
+  if(y===SEEDYEAR && DATA.yearZones) return DATA.yearZones;
+  const b = {Z1:0,Z2:0,Z3:0,Z4:0,Z5:0};
+  runsOf(allActs()).filter(a=>a.date.slice(0,4)===y && a.laps).forEach(a=>a.laps.forEach(l=>{
+    if(!l.hr) return;
+    const z = DATA.zones.find(z=>l.hr>=z.lo && l.hr<=z.hi) || DATA.zones[l.hr<DATA.zones[0].lo?0:4];
+    b[z.z] += l.t;
+  }));
+  const tot = Object.values(b).reduce((s,v)=>s+v,0);
+  return tot ? Object.fromEntries(Object.entries(b).map(([k,v])=>[k, Math.round(v/tot*100)])) : null;
+}
+
+const yearRaces = y => (DATA.races2026||[]).filter(r=>r.date.slice(0,4)===y);
+
+function yearBlock(y){
+  const years = yearsAvailable();
+  const months = yearMonths(y);
+  const zones = yearZonesOf(y);
+  const races = yearRaces(y);
+  let h = `<section class="card"><h2>Jaaroverzicht</h2>
+    <div class="seg" role="group">${years.map(x=>
+      `<button data-year="${x}" aria-pressed="${x===y}">${x}</button>`).join('')}</div>
+  </section>`;
+
+  h += `<section class="card"><h2>Kilometers per maand · ${y}</h2>
+    ${barChart(months.map(([m,v])=>({label:MONTHS[Number(m.slice(5,7))-1], a:v, tipA:`${MONTHS[Number(m.slice(5,7))-1]}: ${v} km`,
+      color: m==='2026-08'?'var(--axis)':'var(--s1)'})),{h:150})}
+    ${y===SEEDYEAR?`<p class="small sec" style="margin:8px 0 0">De piek lag in mei op ${Math.max(...months.map(x=>x[1]))} km. Augustus kwam op 153 km uit, september op ${DATA.yearKm['2026-09']} km inclusief de taper en de race, en oktober op ${DATA.yearKm['2026-10']} km. Het blok naar Egmond houdt dat niveau vast op drie lopen per week in plaats van vier, met een piek van 46,7 km in week 7 en de langste duurloop op 22 km.</p>`:''}
+  </section>`;
+
+  const zc = {Z1:'var(--s3)',Z2:'var(--s1)',Z3:'var(--s4)',Z4:'var(--s2)',Z5:'var(--s5)'};
+  if(zones){
+    h += `<section class="card"><h2>Zoneverdeling ${y}</h2>
+    ${stackBar(Object.entries(zones).map(([z,v])=>({v, color:zc[z], tip:`${z}: ${v}%`})), 22)}
+    <div class="legend">${Object.entries(zones).map(([z,v])=>`<span><i style="background:${zc[z]}"></i>${z} ${v}%</span>`).join('')}</div>
+    ${y===SEEDYEAR?`<p class="small sec" style="margin:10px 0 0">88% rustig tegen 7% hard — klassiek gepolariseerd. Lees dit als rustig (Z1+Z2) tegen hard (Z4+Z5); de grens tussen Z1 en Z2 valt dwars door je meest gelopen hartslag en is daarom onstabiel.</p>`:''}
+    </section>`;
+  }
+
+  if(races.length){
+    h += `<section class="card"><h2>Wedstrijden ${y}</h2>
+    ${races.map(r=>`<div class="item"><div class="st">🏅</div><div class="body">
+      <div class="t">${esc(r.name)} · ${r.time}${r.pr?' <span class="pill good"><span class="dot"></span>PR</span>':''}</div>
+      <div class="d">${fmtDate(r.date)} · ${r.pace} · gem. ${r.hr} bpm<br>1e helft ${r.h1} → 2e helft ${r.h2} · verval ${r.fade}</div>
+    </div></div>`).join('')}
+    ${y===SEEDYEAR?`<p class="small sec" style="margin:8px 0 0">De eerste twee races verloren in de tweede helft (+6 en +14 s/km), beide gelopen op 179–181 bpm — boven de nu gemeten drempel van ${DATA.profile.lthr}. Dam tot Dam is de eerste met een negatieve split, en de enige die onder de drempel werd geopend. Dat is geen conditieverschil maar een uitvoeringsverschil.</p>`:''}
+    </section>`;
+  }
+  return h;
+}
 
 function tableOf(head, rows){
   return `<table class="dt"><thead><tr>${head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead>
@@ -986,9 +1053,10 @@ const TABS = [
   {id:'vandaag', label:'Vandaag', title:'Vandaag', icon:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'},
   {id:'schema',  label:'Schema',  title:'Trainingsschema', icon:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18M8 15h3"/>'},
   {id:'voortgang',label:'Voortgang',title:'Voortgang', icon:'<path d="M4 19V5"/><path d="M4 15l5-5 4 3 7-8"/>'},
-  {id:'jaar',    label:'Jaar',    title:'Jaaroverzicht', icon:'<path d="M12 21a9 9 0 1 0-9-9"/><path d="M12 7v5l4 2"/><path d="M3 12l3-2 2 3"/>'},
+  {id:'profiel', label:'Profiel', title:'Persoonlijk profiel', icon:'<circle cx="12" cy="8" r="3.6"/><path d="M5 20a7 7 0 0 1 14 0"/>'},
 ];
 let tab = LS.get('tab','vandaag');
+if(!TABS.some(x=>x.id===tab)) tab = 'voortgang';   /* de oude tab Jaar zit nu in Voortgang */
 
 function render(){
   const t = TABS.find(x=>x.id===tab) || TABS[0];
@@ -1013,6 +1081,10 @@ document.getElementById('tabs').addEventListener('click', e=>{
 document.addEventListener('click', e=>{
   const t = e.target.closest('[data-tbl]');
   if(t){ const el=document.getElementById('tbl-'+t.dataset.tbl); el.hidden=!el.hidden; t.textContent = el.hidden?'tabel':'verberg tabel'; }
+  const y = e.target.closest('[data-year]');
+  if(y){ YEAR = y.dataset.year;
+    const box = document.getElementById('yearblock');
+    if(box) box.innerHTML = yearBlock(YEAR); }
   const s = e.target.closest('[data-sheet]');
   if(s) openSheet(s.dataset.sheet);
   if(e.target.closest('[data-close]')) closeSheet();
